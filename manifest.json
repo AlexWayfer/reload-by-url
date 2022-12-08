@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Reload by URL",
-	"description": "Reload tabs when its URL matches",
+	"description": "Reload tabs by time interval when its URL matches",
 	"version": "0.1",
 	"permissions": [
 		"tabs"
