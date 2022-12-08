@@ -8,7 +8,21 @@
 		<link rel="stylesheet" href="./popup.css" />
 	</head>
 	<body>
-		<h1>Hello, exts!</h1>
+		<h1>Reload by URL</h1>
+		
+		<section class="new">
+			<input type="text" class="url" />
+			
+			<button class="add">Add</button>
+		</section>
+		
+		<template class="added-item">
+			<li>
+				<p class="url"></p>
+			</li>
+		</template>
+		
+		<ul class="added"></ul>
 		
 		<script src="./popup.js" type="module"></script>
 	</body>
