@@ -8,21 +8,30 @@
 		<link rel="stylesheet" href="../styles/popup.css" />
 	</head>
 	<body>
-		<h1>Reload by URL</h1>
+		<h2>Reload by URL</h2>
 
-		<section class="new">
+		<form class="new">
 			<input type="text" class="url" />
 
-			<button class="add">Add</button>
+			<button type="submit" class="add">Add</button>
+			<button type="submit" class="update hidden">Update</button>
+		</form>
+
+		<section class="added">
+			<h2>Added</h2>
+
+			<template class="added-item">
+				<li>
+					<p class="url"></p>
+				</li>
+			</template>
+
+			<ul class="added hidden"></ul>
+
+			<p class="empty-list">
+				List is empty.
+			</p>
 		</section>
-
-		<template class="added-item">
-			<li>
-				<p class="url"></p>
-			</li>
-		</template>
-
-		<ul class="added"></ul>
 
 		<script src="../scripts/popup.js" type="module"></script>
 	</body>

@@ -1,5 +1,9 @@
 body {
-	& section.new {
+	& .hidden {
+		display: none !important;
+	}
+
+	& form.new {
 		& input,
 		& button {
 			border-width: 1px;
@@ -15,17 +19,36 @@ body {
 			border-radius: 5px;
 		}
 
-		& button.add {
+		& button {
 			display: inline-block;
 			font-size: 18px;
-			padding: 0.15em 0.4em;
-			background-color: #33cc33;
-			border-color: #11aa11;
+			padding: 0.2em 0.5em;
 			border-radius: 7px;
 
-			&:hover {
-				background-color: #22bb22;
+			&.add {
+				background-color: #33cc33;
+				border-color: #11aa11;
+
+				&:hover {
+					background-color: #22bb22;
+				}
 			}
+
+			&.update {
+				background-color: #ffcc00;
+				border-color: #ddaa00;
+
+				&:hover {
+					background-color: #eebb00;
+				}
+			}
+		}
+	}
+
+	& section.added {
+		& p.empty-list {
+			font-size: 15px;
+			color: dimgray;
 		}
 	}
 }

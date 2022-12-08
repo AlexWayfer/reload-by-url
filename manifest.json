@@ -4,7 +4,8 @@
 	"description": "Reload tabs by time interval when its URL matches",
 	"version": "0.1",
 	"permissions": [
-		"tabs"
+		"tabs",
+		"storage"
 	],
 	"action": {
 		"default_popup": "pages/popup.html",
