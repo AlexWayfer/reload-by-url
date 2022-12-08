@@ -28,23 +28,28 @@ const refreshListAdded = data => {
 		emptyListNotice.classList.remove('hidden')
 	} else {
 		// Replace new items data with Nodes
-		const newItems = dataEntries.map(([url, props]) => {
-			const newItem = addedItemTemplate.content.cloneNode(true)
+		const newItems =
+			dataEntries
+				.sort(
+					([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt
+				)
+				.map(([url, props]) => {
+					const newItem = addedItemTemplate.content.cloneNode(true)
 
-			newItem.querySelector('.url').textContent = url
-			newItem.querySelector('button.remove')
-				.addEventListener('click', async () => {
-					if (window.confirm('Do you want to remove?')) {
-						const added = await getAdded()
+					newItem.querySelector('.url').textContent = url
+					newItem.querySelector('button.remove')
+						.addEventListener('click', async () => {
+							if (window.confirm('Do you want to remove?')) {
+								const added = await getAdded()
 
-						delete added[url]
+								delete added[url]
 
-						chrome.storage.sync.set({ added })
-					}
+								chrome.storage.sync.set({ added })
+							}
+						})
+
+					return newItem
 				})
-
-			return newItem
-		})
 
 		listAdded.replaceChildren(...newItems)
 
@@ -90,7 +95,9 @@ formNew.addEventListener('submit', async event => {
 	event.preventDefault()
 
 	const added = await getAdded()
-	added[newUrlInput.value] = {}
+	added[newUrlInput.value] = {
+		addedAt: Date.now()
+	}
 
 	chrome.storage.sync.set({ added })
 })
