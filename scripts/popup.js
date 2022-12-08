@@ -78,7 +78,7 @@ formNew.addEventListener('submit', async event => {
 	event.preventDefault()
 
 	const added = await getAdded()
-	added[currentTab.url] = {}
+	added[newUrlInput.value] = {}
 
 	chrome.storage.sync.set({ added })
 })
