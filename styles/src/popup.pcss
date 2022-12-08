@@ -47,7 +47,34 @@ body {
 
 	& section.added {
 		& ul.added {
-			font-size: 14px;
+			padding-left: 25px;
+			font-size: 16px;
+
+			& li {
+				margin: 1em 0;
+
+				& p.url {
+					margin: 0.4em 0;
+				}
+
+				& button {
+					font-size: 14px;
+					padding: 0.15em 0.3em;
+					border-style: solid;
+					border-width: 1px;
+					border-radius: 0.3em;
+
+					&.remove {
+						color: white;
+						background-color: #dd3333;
+						border-color: #bb1111;
+
+						&:hover {
+							background-color: #cc2222;
+						}
+					}
+				}
+			}
 		}
 
 		& p.empty-list {
