@@ -62,6 +62,26 @@ body {
 				& p.url {
 					margin: 0.4em 0;
 					word-break: break-all;
+
+					--color: 0, 0, 0;
+
+					color: rgba(var(--color), 1);
+
+					& .url-protocol {
+						color: rgba(var(--color), 0.7);
+					}
+
+					& .url-host {
+						color: rgba(var(--color), 1);
+					}
+
+					& .url-path {
+						color: rgba(var(--color), 0.7);
+					}
+
+					& .url-rest {
+						color: rgba(var(--color), 0.5);
+					}
 				}
 
 				& button {

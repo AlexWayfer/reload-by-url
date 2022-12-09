@@ -38,7 +38,9 @@ const refreshListAdded = data => {
 				.map(([url, props]) => {
 					const newItem = addedItemTemplate.content.cloneNode(true)
 
-					newItem.querySelector('.url').textContent = url
+					newItem.querySelector('.url')
+						.replaceChildren(...highlightURLparts(url))
+
 					newItem.querySelector('button.remove')
 						.addEventListener('click', async () => {
 							if (window.confirm('Do you want to remove?')) {
@@ -79,6 +81,27 @@ const completeDecodeURL = urlString => {
 		urlFullPath = `${url.pathname}${url.search}${url.hash}`
 
 	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
+}
+
+const urlRegex = /^(?<protocol>[\w\-*]*:\/\/)?(?<host>[^:\/]*)?(?<path>\/[^?]*)?(?<rest>\?.*)?$/
+
+const highlightURLparts = urlString => {
+	const match = urlString.match(urlRegex)
+
+	const parts = []
+
+	Object.entries(match.groups).forEach(([key, value]) => {
+		if (!value) return
+
+		const element = document.createElement('span')
+
+		element.classList.add(`url-${key}`)
+		element.textContent = value
+
+		parts.push(element)
+	})
+
+	return parts
 }
 
 // Initialize "Added" list from storage
