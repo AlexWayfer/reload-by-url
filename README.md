@@ -1,7 +1,7 @@
 # Reload by URL
 
-Chrome extension for reloading tabs by specified time interval
-when URL matches predefined settings. Path globs are supported.
+Chrome extension for reloading predefined URLs by specified time interval.
+Path globs are supported.
 
 ## Development
 
