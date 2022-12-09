@@ -6,7 +6,7 @@ const [currentTab] = await chrome.tabs.query({
 
 const
 	formNew = document.querySelector('form.new'),
-	newUrlInput = formNew.querySelector('input.url'),
+	newUrlInput = formNew.querySelector('input[name="url"]'),
 	addButton = formNew.querySelector('button.add'),
 	updateButton = formNew.querySelector('button.update'),
 	sectionAdded = document.querySelector('section.added'),
@@ -32,25 +32,28 @@ const refreshListAdded = data => {
 		// Replace new items data with Nodes
 		const newItems =
 			dataEntries
-				.sort(
-					([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt
-				)
+				.sort(([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt)
 				.map(([url, props]) => {
 					const newItem = addedItemTemplate.content.cloneNode(true)
 
-					newItem.querySelector('.url')
-						.replaceChildren(...highlightURLparts(url))
+					newItem.querySelector('.url').replaceChildren(...highlightURLparts(url))
 
-					newItem.querySelector('button.remove')
-						.addEventListener('click', async () => {
-							if (window.confirm('Do you want to remove?')) {
-								const added = await getAdded()
+					const
+						minutes = Math.floor(props.interval / 60),
+						seconds = props.interval % 60
 
-								delete added[url]
+					newItem.querySelector('.time').textContent =
+						`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 
-								chrome.storage.sync.set({ added })
-							}
-						})
+					newItem.querySelector('button.remove').addEventListener('click', async () => {
+						if (window.confirm('Do you want to remove?')) {
+							const added = await getAdded()
+
+							delete added[url]
+
+							chrome.storage.sync.set({ added })
+						}
+					})
 
 					return newItem
 				})
@@ -129,8 +132,12 @@ newUrlInput.value = completeDecodeURL(currentTab.url)
 formNew.addEventListener('submit', async event => {
 	event.preventDefault()
 
-	const added = await getAdded()
-	added[newUrlInput.value] = {
+	const
+		formData = new FormData(formNew),
+		added = await getAdded()
+
+	added[formData.get('url')] = {
+		interval: parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds')),
 		addedAt: Date.now()
 	}
 
