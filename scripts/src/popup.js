@@ -1,3 +1,5 @@
+import punycode from 'punycode'
+
 const [currentTab] = await chrome.tabs.query({
 	active: true, lastFocusedWindow: true
 })
@@ -69,6 +71,16 @@ const toggleNewButtons = async () => {
 	updateButton.classList.toggle('hidden', !isValueExists)
 }
 
+const completeDecodeURL = urlString => {
+	const
+		url = new URL(decodeURI(urlString)),
+		urlHostname = punycode.toUnicode(url.hostname),
+		urlPort = url.port ? `:${url.port}` : '',
+		urlFullPath = `${url.pathname}${url.search}${url.hash}`
+
+	return `${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`
+}
+
 // Initialize "Added" list from storage
 
 refreshListAdded(await getAdded())
@@ -87,7 +99,7 @@ newUrlInput.addEventListener('input', async event => {
 	toggleNewButtons()
 })
 
-newUrlInput.value = currentTab.url
+newUrlInput.value = completeDecodeURL(currentTab.url)
 
 // "New" form submitting
 

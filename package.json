@@ -1,16 +1,19 @@
 {
 	"devDependencies": {
+		"@rollup/plugin-node-resolve": "^15.0.1",
 		"postcss": "^8.4.19",
 		"postcss-cli": "^10.1.0",
-		"postcss-nesting": "^10.2.0"
+		"postcss-nesting": "^10.2.0",
+		"punycode": "^2.1.1",
+		"rollup": "^3.7.0",
+		"rollup-plugin-multi-input": "^1.3.1"
 	},
-
 	"scripts": {
-		"build:styles":
-			"postcss styles/src/ -d styles/ --base styles/src/ --ext=css",
-		"build": "pnpm run build:styles",
-
+		"build:styles": "postcss styles/src/ -d styles/ --base styles/src/ --ext=css",
+		"build:scripts": "rollup -c",
+		"build": "pnpm run build:styles && pnpm run build:scripts",
 		"watch:styles": "pnpm run build:styles --watch",
-		"watch": "pnpm run watch:styles"
+		"watch:scripts": "pnpm run build:scripts --watch",
+		"watch": "pnpm run watch:styles & pnpm run watch:scripts"
 	}
 }

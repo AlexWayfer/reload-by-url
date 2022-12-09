@@ -4,3 +4,7 @@ pnpm-lock.yaml
 /styles/**/*
 !/styles/src
 !/styles/src/*
+
+/scripts/**/*
+!/scripts/src
+!/scripts/src/*
