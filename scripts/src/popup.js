@@ -7,6 +7,7 @@ const [currentTab] = await chrome.tabs.query({
 const
 	formNew = document.querySelector('form.new'),
 	newUrlInput = formNew.querySelector('input[name="url"]'),
+	newTimeFieldset = formNew.querySelector('fieldset[name="time"]'),
 	addButton = formNew.querySelector('button.add'),
 	updateButton = formNew.querySelector('button.update'),
 	sectionAdded = document.querySelector('section.added'),
@@ -19,6 +20,10 @@ const getAdded = async () => {
 	// `.get` returns an object of found results with keys,
 	// not a value of requested by one key
 	return found.added
+}
+
+const splitInterval = interval => {
+	return [Math.floor(interval / 60), interval % 60]
 }
 
 const refreshListAdded = data => {
@@ -38,9 +43,7 @@ const refreshListAdded = data => {
 
 					newItem.querySelector('.url').replaceChildren(...highlightURLparts(url))
 
-					const
-						minutes = Math.floor(props.interval / 60),
-						seconds = props.interval % 60
+					const [minutes, seconds] = splitInterval(props.interval)
 
 					newItem.querySelector('.time').textContent =
 						`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
@@ -67,13 +70,17 @@ const refreshListAdded = data => {
 	toggleNewButtons()
 }
 
-const toggleNewButtons = async () => {
-	const
-		added = await getAdded(),
-		isValueExists = added.hasOwnProperty(newUrlInput.value)
+const getNewUrlProps = async () => {
+	const added = await getAdded()
 
-	addButton.classList.toggle('hidden', isValueExists)
-	updateButton.classList.toggle('hidden', !isValueExists)
+	return added[newUrlInput.value]
+}
+
+const toggleNewButtons = async () => {
+	const newUrlProps = await getNewUrlProps()
+
+	addButton.classList.toggle('hidden', newUrlProps)
+	updateButton.classList.toggle('hidden', !newUrlProps)
 }
 
 const completeDecodeURL = urlString => {
@@ -107,10 +114,6 @@ const highlightURLparts = urlString => {
 	return parts
 }
 
-// Initialize "Added" list from storage
-
-refreshListAdded(await getAdded())
-
 // Listen for future updates of "Added"
 
 chrome.storage.onChanged.addListener((changes, _area) => {
@@ -127,6 +130,23 @@ newUrlInput.addEventListener('input', async event => {
 
 newUrlInput.value = completeDecodeURL(currentTab.url)
 
+// "New" time inputs
+
+const newUrlProps = await getNewUrlProps()
+
+console.debug(newUrlProps)
+
+if (newUrlProps) {
+	const [minutes, seconds] = splitInterval(newUrlProps.interval)
+
+	newTimeFieldset.querySelector('input[name="minutes"]').value = minutes
+	newTimeFieldset.querySelector('input[name="seconds"]').value = seconds
+}
+
+// Initialize "Added" list from storage
+
+refreshListAdded(await getAdded())
+
 // "New" form submitting
 
 formNew.addEventListener('submit', async event => {
@@ -136,10 +156,12 @@ formNew.addEventListener('submit', async event => {
 		formData = new FormData(formNew),
 		added = await getAdded()
 
-	added[formData.get('url')] = {
-		interval: parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds')),
-		addedAt: Date.now()
-	}
+	const newItem = added[formData.get('url')] ??= {}
+
+	added[formData.get('url')].interval =
+		parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
+
+	added[formData.get('url')].addedAt ??= Date.now()
 
 	chrome.storage.sync.set({ added })
 })
