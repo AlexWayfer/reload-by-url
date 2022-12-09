@@ -73,12 +73,12 @@ const toggleNewButtons = async () => {
 
 const completeDecodeURL = urlString => {
 	const
-		url = new URL(decodeURI(urlString)),
+		url = new URL(urlString),
 		urlHostname = punycode.toUnicode(url.hostname),
 		urlPort = url.port ? `:${url.port}` : '',
 		urlFullPath = `${url.pathname}${url.search}${url.hash}`
 
-	return `${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`
+	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
 }
 
 // Initialize "Added" list from storage
