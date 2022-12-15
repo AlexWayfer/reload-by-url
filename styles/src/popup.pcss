@@ -87,19 +87,22 @@ body {
 
 		& ul.added {
 			margin-top: 0;
-			padding-left: 25px;
+			padding-left: 0;
+			list-style: none;
 			font-size: 16px;
 
 			& li {
-				margin: 0;
-				padding: 1.2em 0;
+				margin: 0.8em 0;
+				padding: 0.6em 0.8em;
+				border-radius: 7px;
+				border-bottom: 1px solid #ccc;
 
-				&:not(:last-of-type) {
-					border-bottom: 1px solid #ccc;
+				&.current {
+					background-color: rgba(200, 200, 200, 0.3);
 				}
 
 				& p.url {
-					margin: 0.4em 0;
+					margin: 0.2em 0 0.4em;
 					word-break: break-all;
 
 					--color: 0, 0, 0;
@@ -125,7 +128,7 @@ body {
 				}
 
 				& p.time {
-					margin: 0.2em 0 0.4em;
+					margin: 0.4em 0 0.4em;
 				}
 
 				& button {
@@ -136,6 +139,7 @@ body {
 					border-radius: 0.3em;
 
 					&.remove {
+						margin-bottom: 0.4em;
 						color: white;
 						background-color: #dd3333;
 						border-color: #bb1111;

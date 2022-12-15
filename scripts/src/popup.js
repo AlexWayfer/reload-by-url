@@ -26,6 +26,41 @@ const splitInterval = interval => {
 	return [Math.floor(interval / 60), interval % 60]
 }
 
+const initializeListAddedItem = (url, props) => {
+	// There is `DocumentFragment` without `firstElementChild`
+	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
+	const newItem = addedItemTemplate.content.firstElementChild.cloneNode(true)
+
+	// Fill URL
+
+	newItem.querySelector('.url').replaceChildren(...highlightURLparts(url))
+
+	// Fill time interval
+
+	const [minutes, seconds] = splitInterval(props.interval)
+
+	newItem.querySelector('.time').textContent =
+		`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+
+	// Highlight if current
+
+	if (url == currentTab.url) newItem.classList.add('current')
+
+	// Handle "Remove" button
+
+	newItem.querySelector('button.remove').addEventListener('click', async () => {
+		if (window.confirm('Do you want to remove?')) {
+			const added = await getAdded()
+
+			delete added[url]
+
+			chrome.storage.sync.set({ added })
+		}
+	})
+
+	return newItem
+}
+
 const refreshListAdded = data => {
 	const dataEntries = Object.entries(data)
 
@@ -39,26 +74,7 @@ const refreshListAdded = data => {
 			dataEntries
 				.sort(([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt)
 				.map(([url, props]) => {
-					const newItem = addedItemTemplate.content.cloneNode(true)
-
-					newItem.querySelector('.url').replaceChildren(...highlightURLparts(url))
-
-					const [minutes, seconds] = splitInterval(props.interval)
-
-					newItem.querySelector('.time').textContent =
-						`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-
-					newItem.querySelector('button.remove').addEventListener('click', async () => {
-						if (window.confirm('Do you want to remove?')) {
-							const added = await getAdded()
-
-							delete added[url]
-
-							chrome.storage.sync.set({ added })
-						}
-					})
-
-					return newItem
+					return initializeListAddedItem(url, props)
 				})
 
 		listAdded.replaceChildren(...newItems)
