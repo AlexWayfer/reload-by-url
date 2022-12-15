@@ -80,12 +80,22 @@ body {
 	}
 
 	& section.added {
+		& > h2 {
+			margin-bottom: 0;
+		}
+
 		& ul.added {
+			margin-top: 0;
 			padding-left: 25px;
 			font-size: 16px;
 
 			& li {
-				margin: 1em 0;
+				margin: 0;
+				padding: 1.2em 0;
+
+				&:not(:last-of-type) {
+					border-bottom: 1px solid #ccc;
+				}
 
 				& p.url {
 					margin: 0.4em 0;
@@ -101,19 +111,20 @@ body {
 
 					& .url-host {
 						color: rgba(var(--color), 1);
+						font-weight: 500;
 					}
 
 					& .url-path {
-						color: rgba(var(--color), 0.7);
+						color: rgba(var(--color), 0.8);
 					}
 
 					& .url-rest {
-						color: rgba(var(--color), 0.5);
+						color: rgba(var(--color), 0.6);
 					}
 				}
 
 				& p.time {
-					margin: 0.2em 0 0.6em;
+					margin: 0.2em 0 0.4em;
 				}
 
 				& button {
