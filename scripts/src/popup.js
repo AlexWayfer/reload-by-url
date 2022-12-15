@@ -77,10 +77,12 @@ const getNewUrlProps = async () => {
 }
 
 const toggleNewButtons = async () => {
-	const newUrlProps = await getNewUrlProps()
+	const
+		newUrlProps = await getNewUrlProps(),
+		isPropsExist = Boolean(newUrlProps)
 
-	addButton.classList.toggle('hidden', newUrlProps)
-	updateButton.classList.toggle('hidden', !newUrlProps)
+	addButton.classList.toggle('hidden', isPropsExist)
+	updateButton.classList.toggle('hidden', !isPropsExist)
 }
 
 const completeDecodeURL = urlString => {
@@ -133,8 +135,6 @@ newUrlInput.value = completeDecodeURL(currentTab.url)
 // "New" time inputs
 
 const newUrlProps = await getNewUrlProps()
-
-console.debug(newUrlProps)
 
 if (newUrlProps) {
 	const [minutes, seconds] = splitInterval(newUrlProps.interval)
