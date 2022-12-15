@@ -1,5 +1,6 @@
 import multiInput from 'rollup-plugin-multi-input'
 import resolve from '@rollup/plugin-node-resolve'
+import notify from 'rollup-plugin-notify'
 
 export default {
 	input: ['scripts/src/**/*.js'],
@@ -15,6 +16,7 @@ export default {
 			// It doesn't allow to require `punycode`
 			preferBuiltins: false,
 			isRequire: true
-		})
+		}),
+		notify()
 	]
 }
