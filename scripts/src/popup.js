@@ -46,6 +46,24 @@ const initializeListAddedItem = (url, props) => {
 
 	if (url == currentTab.url) newItem.classList.add('current')
 
+	// Handle "Edit" button
+
+	newItem.querySelector('button.edit').addEventListener('click', async () => {
+		const
+			added = await getAdded(),
+			props = added[url]
+
+		// Fill "new" inputs
+
+		fillFormNewInputs(url, props)
+
+		// Delete old item
+
+		delete added[url]
+
+		chrome.storage.sync.set({ added })
+	})
+
 	// Handle "Remove" button
 
 	newItem.querySelector('button.remove').addEventListener('click', async () => {
@@ -84,6 +102,21 @@ const refreshListAdded = data => {
 	}
 
 	toggleNewButtons()
+}
+
+const fillFormNewInputs = (url, props) => {
+	// "New" form URL input
+
+	newUrlInput.value = completeDecodeURL(url)
+
+	// "New" time inputs
+
+	if (props) {
+		const [minutes, seconds] = splitInterval(props.interval)
+
+		newTimeFieldset.querySelector('input[name="minutes"]').value = minutes
+		newTimeFieldset.querySelector('input[name="seconds"]').value = seconds
+	}
 }
 
 const getNewUrlProps = async () => {
@@ -140,24 +173,13 @@ chrome.storage.onChanged.addListener((changes, _area) => {
 	}
 })
 
-// "New" form URL input
+// Initialize "New" form
+
+fillFormNewInputs(currentTab.url, await getNewUrlProps())
 
 newUrlInput.addEventListener('input', async event => {
 	toggleNewButtons()
 })
-
-newUrlInput.value = completeDecodeURL(currentTab.url)
-
-// "New" time inputs
-
-const newUrlProps = await getNewUrlProps()
-
-if (newUrlProps) {
-	const [minutes, seconds] = splitInterval(newUrlProps.interval)
-
-	newTimeFieldset.querySelector('input[name="minutes"]').value = minutes
-	newTimeFieldset.querySelector('input[name="seconds"]').value = seconds
-}
 
 // Initialize "Added" list from storage
 

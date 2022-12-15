@@ -135,13 +135,22 @@ body {
 
 				& button {
 					font-size: 14px;
-					padding: 0.15em 0.3em;
+					padding: 0.2em 0.4em;
 					border-style: solid;
 					border-width: 1px;
 					border-radius: 0.3em;
+					margin-bottom: 0.4em;
+
+					&.edit {
+						background-color: #ffb500;
+						border-color: #dd9300;
+
+						&:hover {
+							background-color: #eea400;
+						}
+					}
 
 					&.remove {
-						margin-bottom: 0.4em;
 						color: white;
 						background-color: #dd3333;
 						border-color: #bb1111;
