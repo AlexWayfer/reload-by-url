@@ -26,6 +26,20 @@ const splitInterval = interval => {
 	return [Math.floor(interval / 60), interval % 60]
 }
 
+const completeDecodeURL = urlString => {
+	const
+		url = new URL(urlString),
+		urlHostname = punycode.toUnicode(url.hostname),
+		urlPort = url.port ? `:${url.port}` : '',
+		urlFullPath = `${url.pathname}${url.search}${url.hash}`
+
+	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
+}
+
+const matchURL = (url1, url2) => {
+	return completeDecodeURL(url1) == completeDecodeURL(url2)
+}
+
 const initializeListAddedItem = (url, props) => {
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
@@ -44,7 +58,8 @@ const initializeListAddedItem = (url, props) => {
 
 	// Highlight if current
 
-	if (url == currentTab.url) newItem.classList.add('current')
+	// TODO: Support path globs
+	if (matchURL(url, currentTab.url)) newItem.classList.add('current')
 
 	// Handle "Edit" button
 
@@ -136,16 +151,6 @@ const toggleNewButtons = async () => {
 
 	addButton.classList.toggle('hidden', isPropsExist)
 	updateButton.classList.toggle('hidden', !isPropsExist)
-}
-
-const completeDecodeURL = urlString => {
-	const
-		url = new URL(urlString),
-		urlHostname = punycode.toUnicode(url.hostname),
-		urlPort = url.port ? `:${url.port}` : '',
-		urlFullPath = `${url.pathname}${url.search}${url.hash}`
-
-	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
 }
 
 const urlRegex = /^(?<protocol>[\w\-*]*:\/\/)?(?<host>[^:\/]*)?(?<path>\/[^?]*)?(?<rest>\?.*)?$/
