@@ -6,7 +6,7 @@ const [currentTab] = await chrome.tabs.query({
 
 const
 	formNew = document.querySelector('form.new'),
-	newUrlInput = formNew.querySelector('input[name="url"]'),
+	newUrlInput = formNew.querySelector('*.url[contenteditable]'),
 	newTimeFieldset = formNew.querySelector('fieldset[name="time"]'),
 	addButton = formNew.querySelector('button.add'),
 	updateButton = formNew.querySelector('button.update'),
@@ -119,10 +119,14 @@ const refreshListAdded = data => {
 	toggleNewButtons()
 }
 
+const fillNewUrlInput = text => {
+	newUrlInput.replaceChildren(...highlightURLparts(text))
+}
+
 const fillFormNewInputs = (url, props) => {
 	// "New" form URL input
 
-	newUrlInput.value = completeDecodeURL(url)
+	fillNewUrlInput(completeDecodeURL(url))
 
 	// "New" time inputs
 
@@ -137,7 +141,7 @@ const fillFormNewInputs = (url, props) => {
 const getNewUrlProps = async () => {
 	const added = await getAdded()
 
-	return added[newUrlInput.value]
+	return added[newUrlInput.textContent]
 }
 
 const toggleNewButtons = async () => {
@@ -170,6 +174,48 @@ const highlightURLparts = urlString => {
 	return parts
 }
 
+const getCaretPosition = () => {
+	let caretRevCount = 0
+
+	if (window.getSelection) {
+		const
+			selection = window.getSelection(),
+			currentNode = selection.focusNode.parentNode
+			caretRevCount = selection.focusOffset
+
+		let previousNode = currentNode.previousSibling
+
+		while (previousNode) {
+			caretRevCount += previousNode.textContent.length
+			previousNode = previousNode.previousSibling
+		}
+	}
+
+	return caretRevCount
+}
+
+const setCaretPosition = (parentNode, position) => {
+	let
+		caretRevCount = position,
+		nextNode = parentNode.firstElementChild // span
+
+	while (nextNode && nextNode.textContent.length < caretRevCount) {
+		caretRevCount -= nextNode.textContent.length
+		nextNode = nextNode.nextSibling
+	}
+
+	const
+		range = document.createRange(),
+		selection = window.getSelection()
+
+	// `firstChild` because of `text` node inside `span`
+	range.setStart(nextNode.firstChild, caretRevCount)
+	range.collapse(true)
+
+	selection.removeAllRanges()
+	selection.addRange(range)
+}
+
 // Listen for future updates of "Added"
 
 chrome.storage.onChanged.addListener((changes, _area) => {
@@ -183,7 +229,48 @@ chrome.storage.onChanged.addListener((changes, _area) => {
 fillFormNewInputs(currentTab.url, await getNewUrlProps())
 
 newUrlInput.addEventListener('input', async event => {
+	console.debug('input event')
+	console.debug(newUrlInput.textContent)
+	const caretPosition = getCaretPosition()
+	newUrlInput.textContent = newUrlInput.textContent.replace(/(\r\n|\n|\r)/gm, '')
+	console.debug(`caretPosition = ${caretPosition}`)
+	fillNewUrlInput(newUrlInput.textContent)
+	setCaretPosition(newUrlInput, caretPosition)
+
 	toggleNewButtons()
+})
+
+// Prevent `Enter` key in URL input
+
+newUrlInput.addEventListener('keypress', event => {
+	console.debug('keypress event')
+	if (event.key == 'Enter') event.preventDefault()
+})
+
+// Prevent new-lines in pasting data
+
+newUrlInput.addEventListener('paste', event => {
+	event.preventDefault()
+	console.debug('paste event')
+
+	const
+		clipboardText = event.clipboardData.getData('text/plain').replace(/(\r\n|\n|\r)/gm, ''),
+		selection = window.getSelection()
+
+	let caretPosition = getCaretPosition()
+
+	if (selection.rangeCount) {
+		const range = selection.getRangeAt(0)
+		console.debug(`range.toString().length = ${range.toString().length}`)
+		// TODO: selection can be forward or backward
+		caretPosition -= range.toString().length
+		range.deleteContents()
+		range.insertNode(document.createTextNode(clipboardText))
+	}
+
+	console.debug(`caretPosition = ${caretPosition}`)
+	fillNewUrlInput(newUrlInput.textContent)
+	setCaretPosition(newUrlInput, caretPosition + clipboardText.length)
 })
 
 // Initialize "Added" list from storage
@@ -197,14 +284,15 @@ formNew.addEventListener('submit', async event => {
 
 	const
 		formData = new FormData(formNew),
+		url = newUrlInput.textContent,
 		added = await getAdded()
 
-	const newItem = added[formData.get('url')] ??= {}
+	const newItem = added[url] ??= {}
 
-	added[formData.get('url')].interval =
+	added[url].interval =
 		parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
 
-	added[formData.get('url')].addedAt ??= Date.now()
+	added[url].addedAt ??= Date.now()
 
 	chrome.storage.sync.set({ added })
 })
