@@ -61,6 +61,11 @@ const initializeListAddedItem = (url, props) => {
 
 	if (matchURL(currentTab.url, url)) newItem.classList.add('current')
 
+	// Handle "Open" buqtton
+	newItem.querySelector('button.open').addEventListener('click', () => {
+		window.open(url, '_blank', 'noopener,noreferrer')
+	})
+
 	// Handle "Edit" button
 
 	newItem.querySelector('button.edit').addEventListener('click', async () => {
