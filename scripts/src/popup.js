@@ -6,7 +6,7 @@ const [currentTab] = await chrome.tabs.query({
 
 const
 	formNew = document.querySelector('form.new'),
-	newUrlInput = formNew.querySelector('*.url[contenteditable]'),
+	newUrlInput = formNew.querySelector('input[name="url"]'),
 	newTimeFieldset = formNew.querySelector('fieldset[name="time"]'),
 	addButton = formNew.querySelector('button.add'),
 	updateButton = formNew.querySelector('button.update'),
@@ -119,14 +119,10 @@ const refreshListAdded = data => {
 	toggleNewButtons()
 }
 
-const fillNewUrlInput = text => {
-	newUrlInput.replaceChildren(...highlightURLparts(text))
-}
-
 const fillFormNewInputs = (url, props) => {
 	// "New" form URL input
 
-	fillNewUrlInput(completeDecodeURL(url))
+	newUrlInput.value = completeDecodeURL(url)
 
 	// "New" time inputs
 
@@ -141,7 +137,7 @@ const fillFormNewInputs = (url, props) => {
 const getNewUrlProps = async () => {
 	const added = await getAdded()
 
-	return added[newUrlInput.textContent]
+	return added[newUrlInput.value]
 }
 
 const toggleNewButtons = async () => {
@@ -174,48 +170,6 @@ const highlightURLparts = urlString => {
 	return parts
 }
 
-const getCaretPosition = () => {
-	let caretRevCount = 0
-
-	if (window.getSelection) {
-		const
-			selection = window.getSelection(),
-			currentNode = selection.focusNode.parentNode
-			caretRevCount = selection.focusOffset
-
-		let previousNode = currentNode.previousSibling
-
-		while (previousNode) {
-			caretRevCount += previousNode.textContent.length
-			previousNode = previousNode.previousSibling
-		}
-	}
-
-	return caretRevCount
-}
-
-const setCaretPosition = (parentNode, position) => {
-	let
-		caretRevCount = position,
-		nextNode = parentNode.firstElementChild // span
-
-	while (nextNode.textContent.length < caretRevCount) {
-		caretRevCount -= nextNode.textContent.length
-		nextNode = nextNode.nextSibling
-	}
-
-	const
-		range = document.createRange(),
-		selection = window.getSelection()
-
-	// `firstChild` because of `text` node inside `span`
-	range.setStart(nextNode.firstChild, caretRevCount)
-	range.collapse(true)
-
-	selection.removeAllRanges()
-	selection.addRange(range)
-}
-
 // Listen for future updates of "Added"
 
 chrome.storage.onChanged.addListener((changes, _area) => {
@@ -229,10 +183,6 @@ chrome.storage.onChanged.addListener((changes, _area) => {
 fillFormNewInputs(currentTab.url, await getNewUrlProps())
 
 newUrlInput.addEventListener('input', async event => {
-	const caretPosition = getCaretPosition()
-	fillNewUrlInput(newUrlInput.textContent)
-	setCaretPosition(newUrlInput, caretPosition)
-
 	toggleNewButtons()
 })
 

@@ -10,48 +10,27 @@ body {
 		display: none !important;
 	}
 
-	& p.url {
-		--color: 0, 0, 0;
-
-		color: rgba(var(--color), 1);
-
-		& .url-protocol {
-			color: rgba(var(--color), 0.7);
-		}
-
-		& .url-host {
-			color: rgba(var(--color), 1);
-			font-weight: 500;
-		}
-
-		& .url-path {
-			color: rgba(var(--color), 0.8);
-		}
-
-		& .url-rest {
-			color: rgba(var(--color), 0.6);
-		}
-	}
-
 	& form.new {
 		& input,
-		& p[contenteditable],
 		& button {
 			box-sizing: border-box;
 			border-width: 1px;
 			border-style: solid;
 		}
 
-		& input,
-		& p[contenteditable] {
-			padding: 0.25em 0.5em;
+		& input {
 			border-radius: 5px;
 
-			&.url {
+			&[name="url"] {
 				display: block;
 				width: 100%;
 				font-size: 18px;
 				margin: 0.3em 0;
+				padding: 0.25em 0.5em;
+			}
+
+			&.time {
+
 			}
 		}
 
@@ -62,6 +41,7 @@ body {
 
 			& input {
 				font-size: 16px;
+				padding: 0.2em 0.5em;
 				text-align: right;
 
 				&[name="minutes"] {
@@ -126,6 +106,27 @@ body {
 				& p.url {
 					margin: 0.2em 0 0.4em;
 					word-break: break-all;
+
+					--color: 0, 0, 0;
+
+					color: rgba(var(--color), 1);
+
+					& .url-protocol {
+						color: rgba(var(--color), 0.7);
+					}
+
+					& .url-host {
+						color: rgba(var(--color), 1);
+						font-weight: 500;
+					}
+
+					& .url-path {
+						color: rgba(var(--color), 0.8);
+					}
+
+					& .url-rest {
+						color: rgba(var(--color), 0.6);
+					}
 				}
 
 				& p.time {
