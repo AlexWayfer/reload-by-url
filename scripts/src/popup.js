@@ -1,4 +1,5 @@
 import punycode from 'punycode'
+import minimatch from 'minimatch'
 
 const [currentTab] = await chrome.tabs.query({
 	active: true, lastFocusedWindow: true
@@ -36,8 +37,8 @@ const completeDecodeURL = urlString => {
 	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
 }
 
-const matchURL = (url1, url2) => {
-	return completeDecodeURL(url1) == completeDecodeURL(url2)
+const matchURL = (realURL, URLmask) => {
+	return minimatch(completeDecodeURL(realURL), completeDecodeURL(URLmask))
 }
 
 const initializeListAddedItem = (url, props) => {
@@ -58,8 +59,7 @@ const initializeListAddedItem = (url, props) => {
 
 	// Highlight if current
 
-	// TODO: Support path globs
-	if (matchURL(url, currentTab.url)) newItem.classList.add('current')
+	if (matchURL(currentTab.url, url)) newItem.classList.add('current')
 
 	// Handle "Edit" button
 
