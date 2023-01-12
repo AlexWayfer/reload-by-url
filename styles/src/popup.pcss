@@ -133,6 +133,29 @@ body {
 					margin: 0.4em 0 0.4em;
 				}
 
+				& ul.tabs {
+					list-style: disc;
+					margin: 0.6em 0;
+
+					& li {
+						padding: 0;
+						margin: 0.3em 0;
+						border: none;
+
+						& button {
+							background: transparent;
+							border: none;
+							margin: 0;
+							font-size: 15px;
+
+							&:hover {
+								cursor: pointer;
+								text-decoration: underline;
+							}
+						}
+					}
+				}
+
 				& button {
 					font-size: 14px;
 					padding: 0.2em 0.4em;
@@ -140,15 +163,6 @@ body {
 					border-width: 1px;
 					border-radius: 0.3em;
 					margin-bottom: 0.4em;
-
-					&.open {
-						background-color: #87cefa;
-						border-color: #65acd8;
-
-						&:hover {
-							background-color: #76bde9;
-						}
-					}
 
 					&.edit {
 						background-color: #ffb500;

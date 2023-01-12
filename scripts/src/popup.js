@@ -19,7 +19,7 @@ const splitInterval = interval => {
 	return [Math.floor(interval / 60), interval % 60]
 }
 
-const initializeListAddedItem = (url, props) => {
+const initializeListAddedItem = (url, props, tabs) => {
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
 	const newItem = addedItemTemplate.content.firstElementChild.cloneNode(true)
@@ -39,9 +39,24 @@ const initializeListAddedItem = (url, props) => {
 
 	if (matchURL(currentTab.url, url)) newItem.classList.add('current')
 
-	// Handle "Open" buqtton
-	newItem.querySelector('button.open').addEventListener('click', () => {
-		window.open(url, '_blank', 'noopener,noreferrer')
+	// Initialize current tabs list
+	const
+		tabsList = newItem.querySelector('ul.tabs'),
+		tabTemplate = tabsList.querySelector('template.open-tab')
+
+	tabs.forEach(tab => {
+		if (!matchURL(tab.url, url)) return
+
+		const tabElement = tabTemplate.content.firstElementChild.cloneNode(true)
+
+		tabElement.querySelector('button').textContent = tab.title
+
+		tabElement.addEventListener('click', () => {
+			chrome.windows.update(tab.windowId, { focused: true })
+			chrome.tabs.update(tab.id, { active: true })
+		})
+
+		tabsList.appendChild(tabElement)
 	})
 
 	// Handle "Edit" button
@@ -77,8 +92,10 @@ const initializeListAddedItem = (url, props) => {
 	return newItem
 }
 
-const refreshListAdded = data => {
-	const dataEntries = Object.entries(data)
+const refreshListAdded = async data => {
+	const
+		dataEntries = Object.entries(data),
+		tabs = await chrome.tabs.query({})
 
 	if (dataEntries.length == 0) {
 		listAdded.replaceChildren()
@@ -90,7 +107,7 @@ const refreshListAdded = data => {
 			dataEntries
 				.sort(([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt)
 				.map(([url, props]) => {
-					return initializeListAddedItem(url, props)
+					return initializeListAddedItem(url, props, tabs)
 				})
 
 		listAdded.replaceChildren(...newItems)
@@ -155,9 +172,9 @@ const highlightURLparts = urlString => {
 
 // Listen for future updates of "Added"
 
-chrome.storage.onChanged.addListener((changes, _area) => {
+chrome.storage.onChanged.addListener(async (changes, _area) => {
 	if ('added' in changes) {
-		refreshListAdded(changes.added.newValue || {})
+		await refreshListAdded(changes.added.newValue || {})
 	}
 })
 
@@ -171,7 +188,7 @@ newUrlInput.addEventListener('input', async event => {
 
 // Initialize "Added" list from storage
 
-refreshListAdded(await getAdded())
+await refreshListAdded(await getAdded())
 
 // "New" form submitting
 
