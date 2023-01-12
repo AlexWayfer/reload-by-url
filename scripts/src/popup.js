@@ -1,5 +1,4 @@
-import punycode from 'punycode'
-import minimatch from 'minimatch'
+import { getAdded, completeDecodeURL, matchURL } from './_common'
 
 const [currentTab] = await chrome.tabs.query({
 	active: true, lastFocusedWindow: true
@@ -16,29 +15,8 @@ const
 	addedItemTemplate = sectionAdded.querySelector('template.added-item'),
 	emptyListNotice = sectionAdded.querySelector('p.empty-list')
 
-const getAdded = async () => {
-	const found = await chrome.storage.sync.get({ added: {} })
-	// `.get` returns an object of found results with keys,
-	// not a value of requested by one key
-	return found.added
-}
-
 const splitInterval = interval => {
 	return [Math.floor(interval / 60), interval % 60]
-}
-
-const completeDecodeURL = urlString => {
-	const
-		url = new URL(urlString),
-		urlHostname = punycode.toUnicode(url.hostname),
-		urlPort = url.port ? `:${url.port}` : '',
-		urlFullPath = `${url.pathname}${url.search}${url.hash}`
-
-	return decodeURI(`${url.protocol}//${urlHostname}${urlPort}${urlFullPath}`)
-}
-
-const matchURL = (realURL, URLmask) => {
-	return minimatch(completeDecodeURL(realURL), completeDecodeURL(URLmask))
 }
 
 const initializeListAddedItem = (url, props) => {
