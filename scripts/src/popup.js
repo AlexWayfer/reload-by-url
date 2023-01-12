@@ -117,15 +117,15 @@ const fillFormNewInputs = (url, props) => {
 	}
 }
 
-const getNewUrlProps = async () => {
+const getPropsByURL = async (url = newUrlInput.value) => {
 	const added = await getAdded()
 
-	return added[newUrlInput.value]
+	return added[url]
 }
 
 const toggleNewButtons = async () => {
 	const
-		newUrlProps = await getNewUrlProps(),
+		newUrlProps = await getPropsByURL(),
 		isPropsExist = Boolean(newUrlProps)
 
 	addButton.classList.toggle('hidden', isPropsExist)
@@ -163,7 +163,7 @@ chrome.storage.onChanged.addListener((changes, _area) => {
 
 // Initialize "New" form
 
-fillFormNewInputs(currentTab.url, await getNewUrlProps())
+fillFormNewInputs(currentTab.url, await getPropsByURL(currentTab.url))
 
 newUrlInput.addEventListener('input', async event => {
 	toggleNewButtons()
