@@ -1,88 +1,67 @@
-import { getAdded, findMinimalAdded } from './_common'
-
-// Define global constants
-
-const timers = {}
+import { matchURL } from './_common'
 
 // Define functions
 
-const addTimer = (tabID, interval) => {
-	timers[tabID] = {
-		interval: interval,
-		intervalID: setInterval(() => {
-			chrome.tabs.reload(tabID)
-		}, interval * 1000)
-	}
+const createAlarm = (URLmask, interval) => {
+	chrome.alarms.create(
+		URLmask,
+		{
+			periodInMinutes: interval / 60
+		}
+	)
 }
 
-const removeTimer = tabID => {
-	clearInterval(timers[tabID].intervalID)
-	delete timers[tabID]
+const clearAlarm = URLmask => {
+	chrome.alarms.clear(URLmask)
 }
 
-// Initialize timers at extension initialization
+// Initialize alarms for existing `added` in storage
 
-chrome.tabs.query({}, async tabs => {
-	const added = await getAdded()
+chrome.storage.sync.get({ added: {} }, result => {
+	Object.entries(result.added).forEach(([URLmask, props]) => {
+		createAlarm(URLmask, props.interval)
+	})
+})
 
-	tabs.forEach(tab => {
-		const props = findMinimalAdded(tab.url, added)
+// Listen to Alarms
 
-		if (props) {
-			addTimer(tab.id, props.interval)
+chrome.alarms.onAlarm.addListener(async alarm => {
+	(await chrome.tabs.query({})).forEach(tab => {
+		if (matchURL(tab.url, alarm.name)) {
+			chrome.tabs.reload(tab.id)
 		}
 	})
 })
 
-// Listen for any URL change in existing tabs
-
-chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
-	if (changeInfo.status === 'complete') {
-		const
-			added = await getAdded(),
-			props = findMinimalAdded(tab.url, added)
-
-		if (timers[tabID] && (!props || props.interval < timers[tabID].interval)) {
-			removeTimer(tabID)
-		}
-
-		if ((props) && (!timers[tabID] || props.interval < timers[tabID].interval)) {
-			addTimer(tabID, props.interval)
-		}
-	}
-})
-
-// Listen for tabs closing
-
-chrome.tabs.onRemoved.addListener((tabID, removeInfo) => {
-	removeTimer(tabID)
-})
-
 // Listen for future updates of "Added" in the storage
 
-chrome.storage.onChanged.addListener((changes, _area) => {
+chrome.storage.onChanged.addListener(async (changes, _area) => {
 	if ('added' in changes) {
-		const newAdded = changes.added.newValue
+		const
+			newAdded = changes.added.newValue,
+			existingAlarms =
+				(await chrome.alarms.getAll())
+					.reduce((result, alarm) => { result[alarm.name] = alarm; return result }, {})
 
-		chrome.tabs.query({}, tabs => {
-			tabs.forEach(tab => {
-				const
-					props = findMinimalAdded(tab.url, newAdded),
-					existingTimer = timers[tab.id]
+		Object.entries(existingAlarms).forEach(([URLmask, existingAlarm]) => {
+			const addedItem = newAdded[URLmask]
 
-				if (props) {
-					if (existingTimer) { // both exist
-						if (existingTimer.interval != props.interval) { // changed interval
-							removeTimer(tab.id)
-							addTimer(tab.id, props.interval)
-						}
-					} else { // add new timer
-						addTimer(tab.id, props.interval)
-					}
-				} else if (existingTimer) { // if no in `added` but active in `timers`
-					removeTimer(tab.id)
+			if (addedItem) {
+				if ((existingAlarm.periodInMinutes * 60) != addedItem.interval) { // changed interval
+					clearAlarm(URLmask)
+					createAlarm(URLmask, addedItem.interval)
 				}
-			})
+			} else {
+				clearAlarm(URLmask)
+			}
+		})
+
+		Object.entries(newAdded).forEach(([URLmask, addedItem]) => {
+			const existingAlarm = existingAlarms[URLmask]
+
+			if (!existingAlarm) {
+				createAlarm(URLmask, addedItem.interval)
+			}
 		})
 	}
 })

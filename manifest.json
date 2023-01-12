@@ -5,7 +5,8 @@
 	"version": "0.1",
 	"permissions": [
 		"tabs",
-		"storage"
+		"storage",
+		"alarms"
 	],
 	"action": {
 		"default_popup": "pages/popup.html",

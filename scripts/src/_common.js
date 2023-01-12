@@ -21,15 +21,3 @@ export const completeDecodeURL = urlString => {
 export const matchURL = (realURL, URLmask) => {
 	return minimatch(completeDecodeURL(realURL), completeDecodeURL(URLmask))
 }
-
-export const findMinimalAdded = (url, added) => {
-	let result = null
-
-	Object.entries(added).forEach(([URLmask, props]) => {
-		if (!matchURL(url, URLmask)) return
-
-		if (!result || result.interval > props.interval) result = props
-	})
-
-	return result
-}
