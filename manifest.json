@@ -10,7 +10,7 @@
 	],
 	"action": {
 		"default_popup": "pages/popup.html",
-		"default_icon": "images/icon.png"
+		"default_icon": "images/icons/main.png"
 	},
 	"background": {
 		"service_worker": "scripts/background.js",

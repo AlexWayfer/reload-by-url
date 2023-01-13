@@ -92,6 +92,8 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 			button = tabElement.querySelector('button'),
 			buttonTitle = button.querySelector('.title')
 
+		tabElement.tabID = tab.id
+
 		buttonTitle.textContent = tab.title
 
 		// It should be executed only at initialization
@@ -258,4 +260,29 @@ formNew.addEventListener('submit', async event => {
 	added[formData.get('url')].addedAt ??= Date.now()
 
 	chrome.storage.sync.set({ added })
+})
+
+chrome.tabs.onUpdated.addListener((tabID, changeInfo, tab) => {
+	console.debug(`changeInfo =`, changeInfo)
+	listAdded.querySelectorAll('li ul.tabs li').forEach(tabElement => {
+		if (tabElement.tabID == tabID) {
+			const faviconElement = tabElement.querySelector('img.favicon')
+
+			switch (changeInfo.status) {
+				case 'loading':
+					faviconElement.src = chrome.runtime.getURL('images/icons/loading.gif')
+					break
+				case 'complete':
+					faviconElement.src = tab.favIconUrl
+					break
+				default:
+					if ('title' in changeInfo) {
+						const titleElement = tabElement.querySelector('.title')
+
+						titleElement.textContent = tab.title
+					}
+					break
+			}
+		}
+	})
 })

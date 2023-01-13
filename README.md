@@ -19,4 +19,5 @@ or start watcher via `pnpm run watch`.
 
 ## Credentials
 
-Icon: https://www.flaticon.com/free-icon/sync_4340499
+Main icon: https://www.flaticon.com/free-icon/sync_4340499
+Loading icon: https://icons8.com/icon/XHchy08wwA71/loading-circle
