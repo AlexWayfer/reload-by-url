@@ -1,4 +1,4 @@
-import { getAdded, completeDecodeURL, matchURL } from './_common'
+import { getAdded, completeDecodeURL, matchURL, getAllAlarmsAsObject } from './_common'
 
 const [currentTab] = await chrome.tabs.query({
 	active: true, lastFocusedWindow: true
@@ -16,10 +16,22 @@ const
 	emptyListNotice = sectionAdded.querySelector('p.empty-list')
 
 const splitInterval = interval => {
-	return [Math.floor(interval / 60), interval % 60]
+	return { minutes: Math.floor(interval / 60), seconds: interval % 60 }
 }
 
-const initializeListAddedItem = (url, props, tabs) => {
+const fillTimeSpan = (element, timeInSeconds) => {
+	const timeObject = splitInterval(timeInSeconds)
+
+	element.inSeconds = timeInSeconds
+	element.textContent =
+`\
+${timeObject.minutes.toString().padStart(2, '0')}\
+:\
+${timeObject.seconds.toString().padStart(2, '0')}\
+`
+}
+
+const initializeListAddedItem = (url, props, tabs, alarm) => {
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
 	const newItem = addedItemTemplate.content.firstElementChild.cloneNode(true)
@@ -30,10 +42,38 @@ const initializeListAddedItem = (url, props, tabs) => {
 
 	// Fill time interval
 
-	const [minutes, seconds] = splitInterval(props.interval)
+	const
+		timeContainer = newItem.querySelector('.time'),
+		leftTimeElement = timeContainer.querySelector('.left'),
+		allTimeElement = timeContainer.querySelector('.all')
 
-	newItem.querySelector('.time').textContent =
-		`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+	fillTimeSpan(
+		timeContainer.querySelector('.all'),
+		props.interval
+	)
+
+	fillTimeSpan(
+		timeContainer.querySelector('.left'),
+		Math.floor((alarm.scheduledTime - Date.now()) / 1000)
+	)
+
+	// NOTE: `alarm.scheduledTime` doesn't update at intervals and become negative
+
+	setTimeout(
+		() => {
+			setInterval(
+				() => {
+					if (leftTimeElement.inSeconds > 0) {
+						fillTimeSpan(leftTimeElement, leftTimeElement.inSeconds - 1)
+					} else {
+						fillTimeSpan(leftTimeElement, allTimeElement.inSeconds - 1)
+					}
+				},
+				1000
+			)
+		},
+		(alarm.scheduledTime - Date.now()) % 1000
+	)
 
 	// Highlight if current
 
@@ -100,22 +140,23 @@ const initializeListAddedItem = (url, props, tabs) => {
 	return newItem
 }
 
-const refreshListAdded = async data => {
+const refreshListAdded = async () => {
 	const
-		dataEntries = Object.entries(data),
-		tabs = await chrome.tabs.query({})
+		addedEntries = Object.entries(await getAdded()),
+		tabs = await chrome.tabs.query({}),
+		alarms = await getAllAlarmsAsObject()
 
-	if (dataEntries.length == 0) {
+	if (addedEntries.length == 0) {
 		listAdded.replaceChildren()
 		listAdded.classList.add('hidden')
 		emptyListNotice.classList.remove('hidden')
 	} else {
 		// Replace new items data with Nodes
 		const newItems =
-			dataEntries
+			addedEntries
 				.sort(([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt)
 				.map(([url, props]) => {
-					return initializeListAddedItem(url, props, tabs)
+					return initializeListAddedItem(url, props, tabs, alarms[url])
 				})
 
 		listAdded.replaceChildren(...newItems)
@@ -135,10 +176,10 @@ const fillFormNewInputs = (url, props) => {
 	// "New" time inputs
 
 	if (props) {
-		const [minutes, seconds] = splitInterval(props.interval)
+		const time = splitInterval(props.interval)
 
-		newTimeFieldset.querySelector('input[name="minutes"]').value = minutes
-		newTimeFieldset.querySelector('input[name="seconds"]').value = seconds
+		newTimeFieldset.querySelector('input[name="minutes"]').value = time.minutes
+		newTimeFieldset.querySelector('input[name="seconds"]').value = time.seconds
 	}
 }
 
@@ -178,11 +219,13 @@ const highlightURLparts = urlString => {
 	return parts
 }
 
-// Listen for future updates of "Added"
+// Listen for future updates of Alarms
 
-chrome.storage.onChanged.addListener(async (changes, _area) => {
-	if ('added' in changes) {
-		await refreshListAdded(changes.added.newValue || {})
+chrome.storage.onChanged.addListener(async (changes, areaName) => {
+	if (changes.alarmsUpdated?.newValue == true) {
+		await refreshListAdded()
+
+		chrome.storage[areaName].remove('alarmsUpdated')
 	}
 })
 
@@ -196,7 +239,7 @@ newUrlInput.addEventListener('input', async event => {
 
 // Initialize "Added" list from storage
 
-await refreshListAdded(await getAdded())
+await refreshListAdded()
 
 // "New" form submitting
 

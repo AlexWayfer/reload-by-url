@@ -21,3 +21,10 @@ export const completeDecodeURL = urlString => {
 export const matchURL = (realURL, URLmask) => {
 	return minimatch(completeDecodeURL(realURL), completeDecodeURL(URLmask))
 }
+
+export const getAllAlarmsAsObject = async () => {
+	return (
+		(await chrome.alarms.getAll())
+			.reduce((result, alarm) => { result[alarm.name] = alarm; return result }, {})
+	)
+}

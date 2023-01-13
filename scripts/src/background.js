@@ -1,9 +1,9 @@
-import { matchURL } from './_common'
+import { matchURL, getAllAlarmsAsObject } from './_common'
 
 // Define functions
 
 const createAlarm = (URLmask, interval) => {
-	chrome.alarms.create(
+	return chrome.alarms.create(
 		URLmask,
 		{
 			periodInMinutes: interval / 60
@@ -12,7 +12,7 @@ const createAlarm = (URLmask, interval) => {
 }
 
 const clearAlarm = URLmask => {
-	chrome.alarms.clear(URLmask)
+	return chrome.alarms.clear(URLmask)
 }
 
 // Initialize alarms for existing `added` in storage
@@ -37,31 +37,34 @@ chrome.alarms.onAlarm.addListener(async alarm => {
 
 chrome.storage.onChanged.addListener(async (changes, _area) => {
 	if ('added' in changes) {
+		// `await` to add storage flag after all manipulations
+
 		const
 			newAdded = changes.added.newValue,
-			existingAlarms =
-				(await chrome.alarms.getAll())
-					.reduce((result, alarm) => { result[alarm.name] = alarm; return result }, {})
+			existingAlarms = await getAllAlarmsAsObject()
 
-		Object.entries(existingAlarms).forEach(([URLmask, existingAlarm]) => {
+		await Object.entries(existingAlarms).forEach(async ([URLmask, existingAlarm]) => {
 			const addedItem = newAdded[URLmask]
 
 			if (addedItem) {
 				if ((existingAlarm.periodInMinutes * 60) != addedItem.interval) { // changed interval
-					clearAlarm(URLmask)
-					createAlarm(URLmask, addedItem.interval)
+					await clearAlarm(URLmask)
+					await createAlarm(URLmask, addedItem.interval)
 				}
 			} else {
-				clearAlarm(URLmask)
+				await clearAlarm(URLmask)
 			}
 		})
 
-		Object.entries(newAdded).forEach(([URLmask, addedItem]) => {
+		await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
 			const existingAlarm = existingAlarms[URLmask]
 
 			if (!existingAlarm) {
-				createAlarm(URLmask, addedItem.interval)
+				await createAlarm(URLmask, addedItem.interval)
 			}
 		})
+
+		// Now trigger the front-end update
+		chrome.storage.local.set({ alarmsUpdated: true })
 	}
 })
