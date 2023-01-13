@@ -148,9 +148,15 @@ body {
 							margin: 0;
 							font-size: 15px;
 
-							&:hover {
+							&:hover:not(:disabled) {
 								cursor: pointer;
 								text-decoration: underline;
+							}
+
+							&:disabled {
+								font-weight: 600;
+								color: initial;
+								border-bottom: 1px solid gray;
 							}
 						}
 					}

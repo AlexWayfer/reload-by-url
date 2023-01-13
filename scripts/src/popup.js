@@ -47,9 +47,13 @@ const initializeListAddedItem = (url, props, tabs) => {
 	tabs.forEach(tab => {
 		if (!matchURL(tab.url, url)) return
 
-		const tabElement = tabTemplate.content.firstElementChild.cloneNode(true)
+		const
+			tabElement = tabTemplate.content.firstElementChild.cloneNode(true),
+			button = tabElement.querySelector('button')
 
-		tabElement.querySelector('button').textContent = tab.title
+		button.textContent = tab.title
+		// It should be executed only at initialization
+		if (tab.id == currentTab.id) button.disabled = true
 
 		tabElement.addEventListener('click', () => {
 			chrome.windows.update(tab.windowId, { focused: true })
