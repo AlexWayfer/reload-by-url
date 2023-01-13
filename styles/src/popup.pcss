@@ -94,13 +94,16 @@ body {
 			font-size: 16px;
 
 			& li {
+				--border-color: #ccc;
+
 				margin: 0.8em 0;
 				padding: 0.6em 0.8em;
 				border-radius: 7px;
-				border-bottom: 1px solid #ccc;
+				border-bottom: 1px solid var(--border-color);
 
 				&.current {
-					background-color: rgba(200, 200, 200, 0.3);
+					background-color: rgba(180, 180, 180, 0.2);
+					border: 1px solid var(--border-color);
 				}
 
 				& p.url {
