@@ -49,11 +49,15 @@ const initializeListAddedItem = (url, props, tabs) => {
 
 		const
 			tabElement = tabTemplate.content.firstElementChild.cloneNode(true),
-			button = tabElement.querySelector('button')
+			button = tabElement.querySelector('button'),
+			buttonTitle = button.querySelector('.title')
 
-		button.textContent = tab.title
+		buttonTitle.textContent = tab.title
+
 		// It should be executed only at initialization
 		if (tab.id == currentTab.id) button.disabled = true
+
+		button.querySelector('img.favicon').src = tab.favIconUrl
 
 		tabElement.addEventListener('click', () => {
 			chrome.windows.update(tab.windowId, { focused: true })
