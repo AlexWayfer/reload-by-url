@@ -60,7 +60,7 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 			await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
 				const existingAlarm = existingAlarms[URLmask]
 
-				if (!existingAlarm) {
+				if (!existingAlarm && addedItem.enabled) {
 					await createAlarm(URLmask, addedItem.interval)
 				}
 			})
