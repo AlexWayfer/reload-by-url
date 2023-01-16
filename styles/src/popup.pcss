@@ -114,6 +114,10 @@ body {
 					border: 1px solid var(--border-color);
 				}
 
+				&.disabled {
+					opacity: 0.5;
+				}
+
 				& p.url {
 					margin: 0.2em 0 0.4em;
 					word-break: break-all;
@@ -186,6 +190,24 @@ body {
 					border-width: 1px;
 					border-radius: 0.3em;
 					margin-bottom: 0.4em;
+
+					&.disable {
+						background-color: #dcdcdc;
+						border-color: #bababa;
+
+						&:hover {
+							background-color: #cbcbcb;
+						}
+					}
+
+					&.enable {
+						background-color: #abde43;
+						border-color: #bacd21;
+
+						&:hover {
+							background-color: #9acd32;
+						}
+					}
 
 					&.edit {
 						background-color: #ffb500;

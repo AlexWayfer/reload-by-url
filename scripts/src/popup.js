@@ -54,26 +54,28 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 
 	fillTimeSpan(
 		timeContainer.querySelector('.left'),
-		Math.floor((alarm.scheduledTime - Date.now()) / 1000)
+		alarm ? Math.floor((alarm.scheduledTime - Date.now()) / 1000) : props.interval
 	)
 
-	// NOTE: `alarm.scheduledTime` doesn't update at intervals and become negative
+	if (alarm) {
+		// NOTE: `alarm.scheduledTime` doesn't update at intervals and become negative
 
-	setTimeout(
-		() => {
-			setInterval(
-				() => {
-					if (leftTimeElement.inSeconds > 0) {
-						fillTimeSpan(leftTimeElement, leftTimeElement.inSeconds - 1)
-					} else {
-						fillTimeSpan(leftTimeElement, allTimeElement.inSeconds - 1)
-					}
-				},
-				1000
-			)
-		},
-		(alarm.scheduledTime - Date.now()) % 1000
-	)
+		setTimeout(
+			() => {
+				setInterval(
+					() => {
+						if (leftTimeElement.inSeconds > 0) {
+							fillTimeSpan(leftTimeElement, leftTimeElement.inSeconds - 1)
+						} else {
+							fillTimeSpan(leftTimeElement, allTimeElement.inSeconds - 1)
+						}
+					},
+					1000
+				)
+			},
+			(alarm.scheduledTime - Date.now()) % 1000
+		)
+	}
 
 	// Highlight if current
 
@@ -107,6 +109,45 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 		})
 
 		tabsList.appendChild(tabElement)
+	})
+
+	// Handle "Disable" and "Enable" buttons
+
+	const
+		disableButton = newItem.querySelector('button.disable'),
+		enableButton = newItem.querySelector('button.enable')
+
+	if (!props.enabled) {
+		newItem.classList.add('disabled')
+
+		disableButton.classList.add('hidden')
+		enableButton.classList.remove('hidden')
+	}
+
+	disableButton.addEventListener('click', async () => {
+		const added = await getAdded()
+
+		added[url].enabled = false
+
+		chrome.storage.sync.set({ added })
+
+		newItem.classList.add('disabled')
+
+		disableButton.classList.add('hidden')
+		enableButton.classList.remove('hidden')
+	})
+
+	enableButton.addEventListener('click', async () => {
+		const added = await getAdded()
+
+		added[url].enabled = true
+
+		chrome.storage.sync.set({ added })
+
+		newItem.classList.remove('disabled')
+
+		enableButton.classList.add('hidden')
+		disableButton.classList.remove('hidden')
 	})
 
 	// Handle "Edit" button
@@ -223,11 +264,9 @@ const highlightURLparts = urlString => {
 
 // Listen for future updates of Alarms
 
-chrome.storage.onChanged.addListener(async (changes, areaName) => {
-	if (changes.alarmsUpdated?.newValue == true) {
+chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => {
+	if (request.alarmsUpdated) {
 		await refreshListAdded()
-
-		chrome.storage[areaName].remove('alarmsUpdated')
 	}
 })
 
@@ -250,20 +289,22 @@ formNew.addEventListener('submit', async event => {
 
 	const
 		formData = new FormData(formNew),
+		newUrl = formData.get('url'),
 		added = await getAdded()
 
-	const newItem = added[formData.get('url')] ??= {}
+	const newItem = added[newUrl] ??= {}
 
-	added[formData.get('url')].interval =
+	added[newUrl].interval =
 		parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
 
-	added[formData.get('url')].addedAt ??= Date.now()
+	added[newUrl].addedAt ??= Date.now()
+
+	added[newUrl].enabled = true
 
 	chrome.storage.sync.set({ added })
 })
 
 chrome.tabs.onUpdated.addListener((tabID, changeInfo, tab) => {
-	console.debug(`changeInfo =`, changeInfo)
 	listAdded.querySelectorAll('li ul.tabs li').forEach(tabElement => {
 		if (tabElement.tabID == tabID) {
 			const faviconElement = tabElement.querySelector('img.favicon')

@@ -43,28 +43,32 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 			newAdded = changes.added.newValue,
 			existingAlarms = await getAllAlarmsAsObject()
 
-		await Object.entries(existingAlarms).forEach(async ([URLmask, existingAlarm]) => {
-			const addedItem = newAdded[URLmask]
+		if (newAdded) {
+			await Object.entries(existingAlarms).forEach(async ([URLmask, existingAlarm]) => {
+				const addedItem = newAdded[URLmask]
 
-			if (addedItem) {
-				if ((existingAlarm.periodInMinutes * 60) != addedItem.interval) { // changed interval
+				if (addedItem && addedItem.enabled) {
+					if ((existingAlarm.periodInMinutes * 60) != addedItem.interval) { // changed interval
+						await clearAlarm(URLmask)
+						await createAlarm(URLmask, addedItem.interval)
+					}
+				} else {
 					await clearAlarm(URLmask)
+				}
+			})
+
+			await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
+				const existingAlarm = existingAlarms[URLmask]
+
+				if (!existingAlarm) {
 					await createAlarm(URLmask, addedItem.interval)
 				}
-			} else {
-				await clearAlarm(URLmask)
-			}
-		})
-
-		await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
-			const existingAlarm = existingAlarms[URLmask]
-
-			if (!existingAlarm) {
-				await createAlarm(URLmask, addedItem.interval)
-			}
-		})
+			})
+		} else {
+			await chrome.alarms.clearAll()
+		}
 
 		// Now trigger the front-end update
-		chrome.storage.local.set({ alarmsUpdated: true })
+		chrome.runtime.sendMessage({ alarmsUpdated: true })
 	}
 })
