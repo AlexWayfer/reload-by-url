@@ -19,6 +19,8 @@ const clearAlarm = URLmask => {
 
 chrome.storage.sync.get({ added: {} }, result => {
 	Object.entries(result.added).forEach(([URLmask, props]) => {
+		if (!props.enabled) return
+
 		createAlarm(URLmask, props.interval)
 	})
 })
