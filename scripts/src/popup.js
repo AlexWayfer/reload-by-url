@@ -45,7 +45,14 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 	const
 		timeContainer = newItem.querySelector('.time'),
 		leftTimeElement = timeContainer.querySelector('.left'),
-		allTimeElement = timeContainer.querySelector('.all')
+		allTimeElement = timeContainer.querySelector('.all'),
+		updateTimeElements = () => {
+			if (leftTimeElement.inSeconds > 0) {
+				fillTimeSpan(leftTimeElement, leftTimeElement.inSeconds - 1)
+			} else {
+				fillTimeSpan(leftTimeElement, allTimeElement.inSeconds - 1)
+			}
+		}
 
 	fillTimeSpan(
 		timeContainer.querySelector('.all'),
@@ -54,7 +61,7 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 
 	fillTimeSpan(
 		timeContainer.querySelector('.left'),
-		alarm ? Math.floor((alarm.scheduledTime - Date.now()) / 1000) : props.interval
+		alarm ? Math.round((alarm.scheduledTime - Date.now()) / 1000) : props.interval
 	)
 
 	if (alarm) {
@@ -62,16 +69,10 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 
 		setTimeout(
 			() => {
-				setInterval(
-					() => {
-						if (leftTimeElement.inSeconds > 0) {
-							fillTimeSpan(leftTimeElement, leftTimeElement.inSeconds - 1)
-						} else {
-							fillTimeSpan(leftTimeElement, allTimeElement.inSeconds - 1)
-						}
-					},
-					1000
-				)
+				// Call after the short timeout
+				updateTimeElements()
+
+				setInterval(updateTimeElements, 1000)
 			},
 			(alarm.scheduledTime - Date.now()) % 1000
 		)
