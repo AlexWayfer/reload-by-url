@@ -1,8 +1,26 @@
 {
+	// Required
 	"manifest_version": 3,
 	"name": "Reload by URL",
-	"description": "Reload tabs by time interval when its URL matches",
 	"version": "0.1",
+
+	// Recommended
+	"default_locale": "en",
+	"description": "Reload tabs by time interval when its URL matches",
+	"icons": {
+		"16": "images/icons/main/16.png",
+		"32": "images/icons/main/32.png",
+		"48": "images/icons/main/48.png",
+		"64": "images/icons/main/64.png",
+		"96": "images/icons/main/96.png",
+		"128": "images/icons/main/128.png",
+		"256": "images/icons/main/256.png",
+		"512": "images/icons/main/512.png"
+	},
+
+	// Optional
+	"homepage_url": "https://github.com/AlexWayfer/reload-by-url",
+	"author": "alex.wayfer@gmail.com",
 	"permissions": [
 		"tabs",
 		"storage",
@@ -10,7 +28,7 @@
 	],
 	"action": {
 		"default_popup": "pages/popup.html",
-		"default_icon": "images/icons/main.png"
+		"default_icon": "images/icons/main/512.png"
 	},
 	"background": {
 		"service_worker": "scripts/background.js",
