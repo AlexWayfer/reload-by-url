@@ -38,6 +38,7 @@ chrome.alarms.onAlarm.addListener(async alarm => {
 // Listen for future updates of "Added" in the storage
 
 chrome.storage.onChanged.addListener(async (changes, _area) => {
+	console.debug('storage onChanged in background', _area, changes)
 	if ('added' in changes) {
 		// `await` to add storage flag after all manipulations
 
@@ -71,6 +72,7 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 		}
 
 		// Now trigger the front-end update
-		chrome.runtime.sendMessage({ alarmsUpdated: true })
+		console.debug('storage.local.set alarmsUpdated')
+		chrome.storage.local.set({ alarmsUpdated: true })
 	}
 })

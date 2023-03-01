@@ -264,9 +264,12 @@ const highlightURLparts = urlString => {
 
 // Listen for future updates of Alarms
 
-chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => {
-	if (request.alarmsUpdated) {
+chrome.storage.onChanged.addListener(async (changes, areaName) => {
+	console.debug('storage onChanged in popup', areaName, changes)
+	if (changes.alarmsUpdated?.newValue == true) {
 		await refreshListAdded()
+
+		chrome.storage[areaName].remove('alarmsUpdated')
 	}
 })
 
