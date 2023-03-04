@@ -3,7 +3,6 @@
 	"name": "Reload by URL",
 	"version": "0.1",
 
-	"default_locale": "en",
 	"description": "Reload tabs by time interval when its URL matches",
 	"icons": {
 		"16": "images/icons/main/16.png",
