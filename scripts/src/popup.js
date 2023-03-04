@@ -198,7 +198,7 @@ const refreshListAdded = async () => {
 		// Replace new items data with Nodes
 		const newItems =
 			addedEntries
-				.sort(([_aUrl, aProps], [_bUrl, bProps]) => aProps.addedAt - bProps.addedAt)
+				.sort(([_aUrl, aProps], [_bUrl, bProps]) => bProps.addedAt - aProps.addedAt)
 				.map(([url, props]) => {
 					return initializeListAddedItem(url, props, tabs, alarms[url])
 				})
