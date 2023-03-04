@@ -43,6 +43,13 @@ Examples:
 Be aware: there are no compiled styles and scripts in the git repository,
 so you have to build them once via `pnpm run build`, or start watcher via `pnpm run watch`.
 
+### Packing
+
+`pnpm run pack` to pack the extension into ZIP-file.
+Only necessary files will be packed.
+
+We don't need for `.crx` and keys, Developer Dashboard now does it automatically.
+
 ## Credentials
 
 * [Main icon](https://www.flaticon.com/free-icon/sync_4340499)

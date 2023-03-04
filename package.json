@@ -2,6 +2,7 @@
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^24.0.1",
 		"@rollup/plugin-node-resolve": "^15.0.1",
+		"archiver": "^5.3.1",
 		"minimatch": "^7.3.0",
 		"postcss": "^8.4.19",
 		"postcss-cli": "^10.1.0",
@@ -17,6 +18,7 @@
 		"build": "pnpm run build:styles && pnpm run build:scripts",
 		"watch:styles": "pnpm run build:styles --watch",
 		"watch:scripts": "pnpm run build:scripts --watch",
-		"watch": "pnpm run watch:styles & pnpm run watch:scripts"
+		"watch": "pnpm run watch:styles & pnpm run watch:scripts",
+		"pack": "node exe/pack.js"
 	}
 }
