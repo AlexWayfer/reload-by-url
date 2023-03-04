@@ -1,10 +1,6 @@
 node_modules/
 pnpm-lock.yaml
 
-/styles/**/*
-!/styles/src
-!/styles/src/*
+/styles/compiled/
 
-/scripts/**/*
-!/scripts/src
-!/scripts/src/*
+/scripts/compiled/

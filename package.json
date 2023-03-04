@@ -12,7 +12,7 @@
 		"rollup-plugin-notify": "^1.1.0"
 	},
 	"scripts": {
-		"build:styles": "postcss styles/src/ -d styles/ --base styles/src/ --ext=css",
+		"build:styles": "postcss styles/src/ -d styles/compiled/ --base styles/src/ --ext=css",
 		"build:scripts": "rollup -c",
 		"build": "pnpm run build:styles && pnpm run build:scripts",
 		"watch:styles": "pnpm run build:styles --watch",

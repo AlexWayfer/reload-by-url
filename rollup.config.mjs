@@ -7,7 +7,7 @@ export default {
 	input: ['scripts/src/**/*.js'],
 	output: {
 		format: 'es',
-		dir: 'scripts/'
+		dir: 'scripts/compiled/'
 	},
 	plugins: [
 		// https://github.com/alfredosalzillo/rollup-plugin-multi-input/issues/61

@@ -27,7 +27,7 @@
 		"default_icon": "images/icons/main/512.png"
 	},
 	"background": {
-		"service_worker": "scripts/background.js",
+		"service_worker": "scripts/compiled/background.js",
 		"type": "module"
 	}
 }
