@@ -19,6 +19,7 @@
 		"watch:styles": "pnpm run build:styles --watch",
 		"watch:scripts": "pnpm run build:scripts --watch",
 		"watch": "pnpm run watch:styles & pnpm run watch:scripts",
-		"pack": "node exe/pack.js"
+		"pack": "node exe/pack.js",
+		"release": "node exe/release.js"
 	}
 }

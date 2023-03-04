@@ -2,21 +2,14 @@ const fs = require('fs')
 const path = require('path')
 const archiver = require('archiver')
 
-const packageRoot = path.resolve(__dirname, '..')
+const common = require('./_common')
 
-const packageName = path.basename(packageRoot)
+const packageName = path.basename(common.packageRoot)
 // console.debug(`packageName = ${packageName}`)
 
 const
-	manifestRaw = fs.readFileSync(path.resolve(packageRoot, 'manifest.json')),
-	manifest = JSON.parse(manifestRaw),
-	packageVersion = manifest.version
-
-// console.debug(`packageVersion = ${packageVersion}`)
-
-const
-	packageDir = path.resolve(packageRoot, 'pkg'),
-	packagePath = path.resolve(packageDir, `${packageName}-${packageVersion}.zip`)
+	packageDir = path.resolve(common.packageRoot, 'pkg'),
+	packagePath = path.resolve(packageDir, `${packageName}-${common.packageVersion}.zip`)
 // console.debug(`packagePath = ${packagePath}`)
 
 if (!fs.existsSync(packageDir)) {
