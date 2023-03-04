@@ -20,37 +20,40 @@
 			/></a>
 		</h2>
 
-		<form class="new">
-			<input type="text" name="url" required />
-
-			<fieldset name="time">
-				<legend>Time interval</legend>
-
-				<input
-					type="number"
-					name="minutes"
-					min="0"
-					max="999"
-					value="5"
-					required
-				/> mins
-
-				<input
-					type="number"
-					name="seconds"
-					min="0"
-					max="59"
-					value="0"
-					required
-				/> secs
-			</fieldset>
-
-			<button type="submit" class="add">Add</button>
-			<button type="submit" class="update hidden">Update</button>
-		</form>
-
 		<section class="added">
-			<h2>Added</h2>
+			<template class="form-item">
+				<li>
+					<form>
+						<input type="text" name="url" required />
+
+						<fieldset name="time">
+							<legend>Time interval</legend>
+
+							<input
+								type="number"
+								name="minutes"
+								min="0"
+								max="999"
+								value="5"
+								required
+							/> mins
+
+							<input
+								type="number"
+								name="seconds"
+								min="0"
+								max="59"
+								value="0"
+								required
+							/> secs
+						</fieldset>
+
+						<button type="submit" class="add">Add</button>
+						<button type="submit" class="update hidden">Update</button>
+						<!-- There is already such entry, and you can't create duplicates. <button type="button" class="jump">Jump to existing</button> -->
+					</form>
+				</li>
+			</template>
 
 			<template class="added-item">
 				<li>
@@ -79,11 +82,7 @@
 				</li>
 			</template>
 
-			<ul class="added hidden"></ul>
-
-			<p class="empty-list">
-				List is empty.
-			</p>
+			<ul class="added"></ul>
 		</section>
 
 		<script src="../scripts/compiled/popup.js" type="module"></script>

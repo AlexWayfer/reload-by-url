@@ -5,14 +5,10 @@ const [currentTab] = await chrome.tabs.query({
 })
 
 const
-	formNew = document.querySelector('form.new'),
-	newUrlInput = formNew.querySelector('input[name="url"]'),
-	newTimeFieldset = formNew.querySelector('fieldset[name="time"]'),
-	addButton = formNew.querySelector('button.add'),
-	updateButton = formNew.querySelector('button.update'),
 	sectionAdded = document.querySelector('section.added'),
 	listAdded = sectionAdded.querySelector('ul.added'),
 	addedItemTemplate = sectionAdded.querySelector('template.added-item'),
+	formItemTemplate = sectionAdded.querySelector('template.form-item'),
 	emptyListNotice = sectionAdded.querySelector('p.empty-list')
 
 const splitInterval = interval => {
@@ -31,7 +27,7 @@ ${timeObject.seconds.toString().padStart(2, '0')}\
 `
 }
 
-const initializeListAddedItem = (url, props, tabs, alarm) => {
+const initializeAddedItem = (url, props, tabs, alarm) => {
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
 	const newItem = addedItemTemplate.content.firstElementChild.cloneNode(true)
@@ -152,6 +148,7 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 	})
 
 	// Handle "Edit" button
+	// TODO: Update
 
 	newItem.querySelector('button.edit').addEventListener('click', async () => {
 		const
@@ -184,62 +181,93 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 	return newItem
 }
 
+const initializeFormItem = (url, props) => {
+	// There is `DocumentFragment` without `firstElementChild`
+	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
+	const newItem = formItemTemplate.content.firstElementChild.cloneNode(true)
+
+	if (matchURL(currentTab.url, url)) newItem.classList.add('current')
+
+	const
+		form = newItem.querySelector('form'),
+		urlInput = form.querySelector('input[name="url"]'),
+		addButton = form.querySelector('button.add'),
+		updateButton = form.querySelector('button.update')
+
+	urlInput.value = completeDecodeURL(url)
+
+	const toggleFormButtons = async () => {
+		const
+			currentProps = await getPropsByURL(urlInput.value),
+			isPropsExist = Boolean(currentProps)
+
+		addButton.classList.toggle('hidden', isPropsExist)
+		updateButton.classList.toggle('hidden', !isPropsExist)
+	}
+
+	urlInput.addEventListener('input', async event => {
+		toggleFormButtons()
+	})
+
+	const time = splitInterval(props.interval)
+
+	form.querySelector('input[name="minutes"]').value = time.minutes
+	form.querySelector('input[name="seconds"]').value = time.seconds
+
+	form.addEventListener('submit', async event => {
+		event.preventDefault()
+
+		const
+			formData = new FormData(form),
+			newUrl = formData.get('url'),
+			added = await getAdded()
+
+		const newAdded = added[newUrl] ??= {}
+
+		newAdded.interval =
+			parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
+
+		newAdded.addedAt ??= Date.now()
+
+		newAdded.enabled = true
+
+		chrome.storage.sync.set({ added })
+	})
+
+	toggleFormButtons()
+
+	return newItem
+}
+
 const refreshListAdded = async () => {
 	const
-		addedEntries = Object.entries(await getAdded()),
+		added = await getAdded(),
 		tabs = await chrome.tabs.query({}),
 		alarms = await getAllAlarmsAsObject()
 
-	if (addedEntries.length == 0) {
-		listAdded.replaceChildren()
-		listAdded.classList.add('hidden')
-		emptyListNotice.classList.remove('hidden')
-	} else {
-		// Replace new items data with Nodes
-		const newItems =
-			addedEntries
-				.sort(([_aUrl, aProps], [_bUrl, bProps]) => bProps.addedAt - aProps.addedAt)
-				.map(([url, props]) => {
-					return initializeListAddedItem(url, props, tabs, alarms[url])
-				})
+	// Replace new items data with Nodes
+	const newItems =
+		Object.entries(added)
+			.sort(([_aUrl, aProps], [_bUrl, bProps]) => bProps.addedAt - aProps.addedAt)
+			.map(([url, props]) => {
+				if (url == currentTab.url) {
+					return initializeFormItem(url, props)
+				} else {
+					return initializeAddedItem(url, props, tabs, alarms[url])
+				}
+			})
 
-		listAdded.replaceChildren(...newItems)
-
-		emptyListNotice.classList.add('hidden')
-		listAdded.classList.remove('hidden')
+	if (!added[currentTab.url]) {
+		newItems.unshift(initializeFormItem(currentTab.url, { interval: 5 * 60 }))
 	}
 
-	toggleNewButtons()
+	listAdded.replaceChildren(...newItems)
 }
 
-const fillFormNewInputs = (url, props) => {
-	// "New" form URL input
-
-	newUrlInput.value = completeDecodeURL(url)
-
-	// "New" time inputs
-
-	if (props) {
-		const time = splitInterval(props.interval)
-
-		newTimeFieldset.querySelector('input[name="minutes"]').value = time.minutes
-		newTimeFieldset.querySelector('input[name="seconds"]').value = time.seconds
-	}
-}
-
-const getPropsByURL = async (url = newUrlInput.value) => {
+const getPropsByURL = async (url) => {
 	const added = await getAdded()
 
 	return added[url]
-}
-
-const toggleNewButtons = async () => {
-	const
-		newUrlProps = await getPropsByURL(),
-		isPropsExist = Boolean(newUrlProps)
-
-	addButton.classList.toggle('hidden', isPropsExist)
-	updateButton.classList.toggle('hidden', !isPropsExist)
 }
 
 const urlRegex = /^(?<protocol>[\w\-*]*:\/\/)?(?<host>[^:\/]*)?(?<path>\/[^?]*)?(?<rest>\?.*)?$/
@@ -271,39 +299,9 @@ chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => 
 	}
 })
 
-// Initialize "New" form
-
-fillFormNewInputs(currentTab.url, await getPropsByURL(currentTab.url))
-
-newUrlInput.addEventListener('input', async event => {
-	toggleNewButtons()
-})
-
 // Initialize "Added" list from storage
 
 await refreshListAdded()
-
-// "New" form submitting
-
-formNew.addEventListener('submit', async event => {
-	event.preventDefault()
-
-	const
-		formData = new FormData(formNew),
-		newUrl = formData.get('url'),
-		added = await getAdded()
-
-	const newItem = added[newUrl] ??= {}
-
-	added[newUrl].interval =
-		parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
-
-	added[newUrl].addedAt ??= Date.now()
-
-	added[newUrl].enabled = true
-
-	chrome.storage.sync.set({ added })
-})
 
 chrome.tabs.onUpdated.addListener((tabID, changeInfo, tab) => {
 	listAdded.querySelectorAll('li ul.tabs li').forEach(tabElement => {

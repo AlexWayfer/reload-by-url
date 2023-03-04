@@ -18,83 +18,7 @@ body {
 		}
 	}
 
-	& form.new {
-		& input,
-		& button {
-			box-sizing: border-box;
-			border-width: 1px;
-			border-style: solid;
-		}
-
-		& input {
-			border-radius: 5px;
-
-			&[name="url"] {
-				display: block;
-				width: 100%;
-				font-size: 18px;
-				margin: 0.3em 0;
-				padding: 0.25em 0.5em;
-			}
-
-			&.time {
-
-			}
-		}
-
-		& fieldset[name="time"] {
-			margin: 0;
-			border: 1px solid #ccc;
-			border-radius: 5px;
-
-			& input {
-				font-size: 16px;
-				padding: 0.2em 0.5em;
-				text-align: right;
-
-				&[name="minutes"] {
-					width: 4.5em;
-				}
-
-				&[name="seconds"] {
-					width: 3.5em;
-					margin-left: 0.4em;
-				}
-			}
-		}
-
-		& button {
-			display: block;
-			font-size: 18px;
-			padding: 0.2em 0.5em;
-			border-radius: 7px;
-			margin: 0.4em 0;
-
-			&.add {
-				background-color: #33cc33;
-				border-color: #11aa11;
-
-				&:hover {
-					background-color: #22bb22;
-				}
-			}
-
-			&.update {
-				background-color: #ffcc00;
-				border-color: #ddaa00;
-
-				&:hover {
-					background-color: #eebb00;
-				}
-			}
-		}
-	}
-
 	& section.added {
-		& > h2 {
-			margin-bottom: 0;
-		}
-
 		& ul.added {
 			margin-top: 0;
 			padding-left: 0;
@@ -228,12 +152,79 @@ body {
 						}
 					}
 				}
-			}
-		}
 
-		& p.empty-list {
-			font-size: 15px;
-			color: dimgray;
+				& > form {
+					& input,
+					& button {
+						box-sizing: border-box;
+						border-width: 1px;
+						border-style: solid;
+					}
+
+					& input {
+						border-radius: 5px;
+
+						&[name="url"] {
+							display: block;
+							width: 100%;
+							font-size: 18px;
+							margin: 0.3em 0;
+							padding: 0.25em 0.5em;
+						}
+
+						&.time {
+
+						}
+					}
+
+					& fieldset[name="time"] {
+						margin: 0;
+						border: 1px solid #ccc;
+						border-radius: 5px;
+
+						& input {
+							font-size: 16px;
+							padding: 0.2em 0.5em;
+							text-align: right;
+
+							&[name="minutes"] {
+								width: 4.5em;
+							}
+
+							&[name="seconds"] {
+								width: 3.5em;
+								margin-left: 0.4em;
+							}
+						}
+					}
+
+					& button {
+						display: block;
+						font-size: 18px;
+						padding: 0.2em 0.5em;
+						border-radius: 7px;
+						margin: 0.4em 0;
+
+						&.add {
+							background-color: #33cc33;
+							border-color: #11aa11;
+
+							&:hover {
+								background-color: #22bb22;
+							}
+						}
+
+						&.update {
+							background-color: #ffcc00;
+							border-color: #ddaa00;
+
+							&:hover {
+								background-color: #eebb00;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
