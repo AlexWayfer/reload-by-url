@@ -1,7 +1,20 @@
 # Reload by URL
 
-Chrome extension for reloading predefined URLs by specified time interval.
-Path globs are supported.
+Reload tabs by time interval when its URL matches.
+
+## Description
+
+Specify any URL (current open by default)
+or even [path glob](https://en.wikipedia.org/wiki/Glob_(programming)) (its mask)
+and a time interval.
+Then extension will reload all tabs with matching URL by this interval.
+If you closed a tab or navigated to another URL — the extension will not touch the tab.
+
+Examples:
+
+*   A site with recommendations like Twitch.
+*   A feed/board/forum like Reddit.
+*   An order/delivery page with tracking; if URL has order number — just use path glob.
 
 ## Installation
 
@@ -27,12 +40,11 @@ Path globs are supported.
 
 ### Building
 
-Be aware: there are no compiled styles in git repository,
-so you have to build them once via `pnpm run build`,
-or start watcher via `pnpm run watch`.
+Be aware: there are no compiled styles and scripts in the git repository,
+so you have to build them once via `pnpm run build`, or start watcher via `pnpm run watch`.
 
 ## Credentials
 
-Main icon: https://www.flaticon.com/free-icon/sync_4340499
-Loading icon: https://icons8.com/icon/XHchy08wwA71/loading-circle
-GitHub icon: https://icons8.com/icon/set/github/material-outlined
+* [Main icon](https://www.flaticon.com/free-icon/sync_4340499)
+* [Loading icon](https://icons8.com/icon/XHchy08wwA71/loading-circle)
+* [GitHub icon](https://icons8.com/icon/set/github/material-outlined)
