@@ -3,6 +3,20 @@
 Chrome extension for reloading predefined URLs by specified time interval.
 Path globs are supported.
 
+## Installation
+
+<a
+	href="https://chrome.google.com/webstore/detail/reload-by-url/imgeaeicldbffknjklfhnmbemipkkcaf"
+	target="_blank"
+	rel="noopener"
+	>
+	<img
+		src="chrome-webstore-button.png"
+		alt="Available in the Chrome Web Store"
+		height="70"
+	/>
+</a>
+
 ## Development
 
 ### Setup
