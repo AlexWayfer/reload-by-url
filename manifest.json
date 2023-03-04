@@ -1,10 +1,8 @@
 {
-	// Required
 	"manifest_version": 3,
 	"name": "Reload by URL",
 	"version": "0.1",
 
-	// Recommended
 	"default_locale": "en",
 	"description": "Reload tabs by time interval when its URL matches",
 	"icons": {
@@ -18,7 +16,6 @@
 		"512": "images/icons/main/512.png"
 	},
 
-	// Optional
 	"homepage_url": "https://github.com/AlexWayfer/reload-by-url",
 	"author": "alex.wayfer@gmail.com",
 	"permissions": [
