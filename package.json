@@ -1,6 +1,6 @@
 {
 	"devDependencies": {
-		"@rollup/plugin-commonjs": "^24.0.1",
+		"@rollup/plugin-commonjs": "^25.0.2",
 		"@rollup/plugin-node-resolve": "^15.0.1",
 		"archiver": "^5.3.1",
 		"minimatch": "^8.0.3",
