@@ -6,7 +6,7 @@
 		"minimatch": "^9.0.3",
 		"postcss": "^8.4.19",
 		"postcss-cli": "^10.1.0",
-		"postcss-nesting": "^11.2.1",
+		"postcss-nesting": "^12.0.1",
 		"punycode": "^2.1.1",
 		"rollup": "^3.7.0",
 		"rollup-plugin-multi-input": "^1.3.1",
