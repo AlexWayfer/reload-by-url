@@ -1,4 +1,6 @@
-import { getAdded, completeDecodeURL, matchURL, getAllAlarmsAsObject } from './_common'
+import {
+	getAdded, completeDecodeURL, matchURL, getAllIntervals, timeUntilNextTimeout
+} from './_common'
 
 const [currentTab] = await chrome.tabs.query({
 	active: true, lastFocusedWindow: true
@@ -31,7 +33,9 @@ ${timeObject.seconds.toString().padStart(2, '0')}\
 `
 }
 
-const initializeListAddedItem = (url, props, tabs, alarm) => {
+const initializeListAddedItem = (url, props, tabs, interval) => {
+	console.debug(`initializeListAddedItem`)
+
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
 	const newItem = addedItemTemplate.content.firstElementChild.cloneNode(true)
@@ -59,14 +63,14 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 		props.interval
 	)
 
+	console.debug(`timeUntilNextTimeout(interval) = ${timeUntilNextTimeout(interval)}`)
+
 	fillTimeSpan(
 		timeContainer.querySelector('.left'),
-		alarm ? Math.round((alarm.scheduledTime - Date.now()) / 1000) : props.interval
+		interval ? Math.round(timeUntilNextTimeout(interval)) : props.interval
 	)
 
-	if (alarm) {
-		// NOTE: `alarm.scheduledTime` doesn't update at intervals and become negative
-
+	if (interval) {
 		setTimeout(
 			() => {
 				// Call after the short timeout
@@ -74,7 +78,7 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 
 				setInterval(updateTimeElements, 1000)
 			},
-			(alarm.scheduledTime - Date.now()) % 1000
+			timeUntilNextTimeout(interval) % 1000
 		)
 	}
 
@@ -173,11 +177,15 @@ const initializeListAddedItem = (url, props, tabs, alarm) => {
 
 	newItem.querySelector('button.remove').addEventListener('click', async () => {
 		if (window.confirm('Do you want to remove?')) {
-			const added = await getAdded()
+			const
+				added = await getAdded(),
+				intervals = await getAllIntervals()
 
 			delete added[url]
+			delete intervals[url]
 
 			chrome.storage.sync.set({ added })
+			chrome.storage.local.set({ intervals })
 		}
 	})
 
@@ -188,7 +196,9 @@ const refreshListAdded = async () => {
 	const
 		addedEntries = Object.entries(await getAdded()),
 		tabs = await chrome.tabs.query({}),
-		alarms = await getAllAlarmsAsObject()
+		intervals = await getAllIntervals()
+
+	console.debug('intervals = ', intervals)
 
 	if (addedEntries.length == 0) {
 		listAdded.replaceChildren()
@@ -200,7 +210,7 @@ const refreshListAdded = async () => {
 			addedEntries
 				.sort(([_aUrl, aProps], [_bUrl, bProps]) => bProps.addedAt - aProps.addedAt)
 				.map(([url, props]) => {
-					return initializeListAddedItem(url, props, tabs, alarms[url])
+					return initializeListAddedItem(url, props, tabs, intervals[url])
 				})
 
 		listAdded.replaceChildren(...newItems)
@@ -263,10 +273,10 @@ const highlightURLparts = urlString => {
 	return parts
 }
 
-// Listen for future updates of Alarms
+// Listen for future updates of intervals
 
 chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => {
-	if (request.alarmsUpdated) {
+	if (request.intervalsUpdated) {
 		await refreshListAdded()
 	}
 })

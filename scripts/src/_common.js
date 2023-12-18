@@ -1,11 +1,19 @@
 import punycode from 'punycode'
 import minimatch from 'minimatch'
 
-export const getAdded = async () => {
-	const found = await chrome.storage.sync.get({ added: {} })
+const getFromStorage = async (key, area) => {
+	const found = await chrome.storage[area].get({ [key]: {} })
 	// `.get` returns an object of found results with keys,
 	// not a value of requested by one key
-	return found.added
+	return found[key]
+}
+
+export const getAdded = async () => {
+	return getFromStorage('added', 'sync')
+}
+
+export const getAllIntervals = async () => {
+	return getFromStorage('intervals', 'local')
 }
 
 export const completeDecodeURL = urlString => {
@@ -22,9 +30,7 @@ export const matchURL = (realURL, URLmask) => {
 	return minimatch(completeDecodeURL(realURL), completeDecodeURL(URLmask))
 }
 
-export const getAllAlarmsAsObject = async () => {
-	return (
-		(await chrome.alarms.getAll())
-			.reduce((result, alarm) => { result[alarm.name] = alarm; return result }, {})
-	)
+export const timeUntilNextTimeout = interval => {
+	// https://bugs.chromium.org/p/chromium/issues/detail?id=1472588
+	return interval.time - (Date.now() - new Date(interval.startAt)) / 1000 % interval.time
 }

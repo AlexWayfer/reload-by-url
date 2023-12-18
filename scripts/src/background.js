@@ -1,37 +1,72 @@
-import { matchURL, getAllAlarmsAsObject } from './_common'
+import {
+	matchURL, getAllIntervals, timeUntilNextTimeout
+} from './_common'
 
 // Define functions
 
-const createAlarm = (URLmask, interval) => {
-	return chrome.alarms.create(
-		URLmask,
-		{
-			periodInMinutes: interval / 60
+const createTabTimeout = (timeInSeconds) => {
+	return setTimeout(() => {
+		location.reload()
+	}, timeInSeconds * 1000)
+}
+
+const insertTabTimeout = async (tab, interval) => {
+	await chrome.scripting.executeScript({
+		target : { tabId : tab.id },
+		func : createTabTimeout,
+		args : [timeUntilNextTimeout(interval)],
+	}, injectionResult => {
+		// https://developer.chrome.com/docs/extensions/reference/scripting/#type-InjectionResult
+		interval.tabs[tab.id] = injectionResult[0].result
+	})
+}
+
+const createInterval = async (URLmask, time) => {
+	const
+		intervals = await getAllIntervals(),
+		newInterval = (intervals[URLmask] ??= {})
+
+	newInterval.time = time
+	// https://bugs.chromium.org/p/chromium/issues/detail?id=1472588
+	newInterval.startAt = (new Date()).toString()
+	newInterval.tabs = new Object()
+
+	const allTabs = await chrome.tabs.query({})
+
+	await allTabs.forEach(async (tab) => {
+		if (matchURL(tab.url, URLmask)) {
+			insertTabTimeout(tab, newInterval)
 		}
-	)
+	})
+
+	console.debug(intervals)
+
+	await chrome.storage.local.set({ intervals })
 }
 
-const clearAlarm = URLmask => {
-	return chrome.alarms.clear(URLmask)
+const clearTabTimeout = (timerID) => {
+	return clearTimeout(timerID)
 }
 
-// Initialize alarms for existing `added` in storage
+const clearInterval = async URLmask => {
+	const intervals = await getAllIntervals()
+
+	Object.entries(intervals[URLmask].tabs).forEach(([tabID, timerID]) => {
+		chrome.scripting.executeScript({
+			target : { tabId : tabID },
+			func : clearTabTimeout,
+			args : [timerID],
+		})
+	})
+}
+
+// Initialize intervals for existing `added` in storage
 
 chrome.storage.sync.get({ added: {} }, result => {
 	Object.entries(result.added).forEach(([URLmask, props]) => {
 		if (!props.enabled) return
 
-		createAlarm(URLmask, props.interval)
-	})
-})
-
-// Listen to Alarms
-
-chrome.alarms.onAlarm.addListener(async alarm => {
-	(await chrome.tabs.query({})).forEach(tab => {
-		if (matchURL(tab.url, alarm.name)) {
-			chrome.tabs.reload(tab.id)
-		}
+		createInterval(URLmask, props.interval)
 	})
 })
 
@@ -43,34 +78,44 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 
 		const
 			newAdded = changes.added.newValue,
-			existingAlarms = await getAllAlarmsAsObject()
+			existingIntervals = await getAllIntervals()
 
 		if (newAdded) {
-			await Object.entries(existingAlarms).forEach(async ([URLmask, existingAlarm]) => {
+			await Object.entries(existingIntervals).forEach(async ([URLmask, existingInterval]) => {
 				const addedItem = newAdded[URLmask]
 
 				if (addedItem && addedItem.enabled) {
-					if ((existingAlarm.periodInMinutes * 60) != addedItem.interval) { // changed interval
-						await clearAlarm(URLmask)
-						await createAlarm(URLmask, addedItem.interval)
+					if (existingInterval.time != addedItem.interval) { // changed interval
+						await clearInterval(URLmask)
+						await createInterval(URLmask, addedItem.interval)
 					}
 				} else {
-					await clearAlarm(URLmask)
+					await clearInterval(URLmask)
 				}
 			})
 
 			await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
-				const existingAlarm = existingAlarms[URLmask]
+				const existingInterval = existingIntervals[URLmask]
 
-				if (!existingAlarm && addedItem.enabled) {
-					await createAlarm(URLmask, addedItem.interval)
+				if (!existingInterval && addedItem.enabled) {
+					await createInterval(URLmask, addedItem.interval)
 				}
 			})
 		} else {
-			await chrome.alarms.clearAll()
+			await chrome.storage.local.set({ intervals: {} })
 		}
 
 		// Now trigger the front-end update
-		chrome.runtime.sendMessage({ alarmsUpdated: true })
+		chrome.runtime.sendMessage({ intervalsUpdated: true })
 	}
+})
+
+chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
+	const intervals = await getAllIntervals()
+
+	Object.entries(intervals).forEach(([URLmask, interval]) => {
+		if (changeInfo.status == 'loading' && matchURL(tab.url, URLmask)) {
+			insertTabTimeout(tab, interval)
+		}
+	})
 })

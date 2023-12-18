@@ -20,8 +20,9 @@
 	"permissions": [
 		"tabs",
 		"storage",
-		"alarms"
+		"scripting"
 	],
+	"host_permissions": ["*://*/*"],
 	"action": {
 		"default_popup": "pages/popup.html",
 		"default_icon": "images/icons/main/512.png"
