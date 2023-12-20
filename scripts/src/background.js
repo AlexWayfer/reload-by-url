@@ -22,6 +22,8 @@ const insertTabTimeout = async (tab, interval) => {
 }
 
 const createInterval = async (URLmask, time) => {
+	console.debug('createInterval')
+
 	const
 		intervals = await getAllIntervals(),
 		newInterval = (intervals[URLmask] ??= {})
@@ -33,41 +35,49 @@ const createInterval = async (URLmask, time) => {
 
 	const allTabs = await chrome.tabs.query({})
 
-	await allTabs.forEach(async (tab) => {
+	for (const tab of allTabs) {
 		if (matchURL(tab.url, URLmask)) {
 			insertTabTimeout(tab, newInterval)
 		}
-	})
+	}
 
-	console.debug(intervals)
+	console.debug('intervals = ', intervals)
 
 	await chrome.storage.local.set({ intervals })
+
+	console.debug('createInterval done')
 }
 
 const clearTabTimeout = (timerID) => {
 	return clearTimeout(timerID)
 }
 
-const clearInterval = async URLmask => {
+const removeInterval = async URLmask => {
+	console.debug('removeInterval')
+
 	const intervals = await getAllIntervals()
 
-	Object.entries(intervals[URLmask].tabs).forEach(([tabID, timerID]) => {
-		chrome.scripting.executeScript({
+	for (const [tabID, timerID] of Object.entries(intervals[URLmask].tabs)) {
+		await chrome.scripting.executeScript({
 			target : { tabId : tabID },
 			func : clearTabTimeout,
 			args : [timerID],
 		})
-	})
+	}
+
+	delete intervals[URLmask]
+
+	await chrome.storage.local.set({ intervals })
 }
 
 // Initialize intervals for existing `added` in storage
 
 chrome.storage.sync.get({ added: {} }, result => {
-	Object.entries(result.added).forEach(([URLmask, props]) => {
-		if (!props.enabled) return
+	for (const [URLmask, props] of Object.entries(result.added)) {
+		if (!props.enabled) continue
 
 		createInterval(URLmask, props.interval)
-	})
+	}
 })
 
 // Listen for future updates of "Added" in the storage
@@ -76,36 +86,44 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 	if ('added' in changes) {
 		// `await` to add storage flag after all manipulations
 
-		const
-			newAdded = changes.added.newValue,
-			existingIntervals = await getAllIntervals()
+		const newAdded = changes.added.newValue
 
 		if (newAdded) {
-			await Object.entries(existingIntervals).forEach(async ([URLmask, existingInterval]) => {
-				const addedItem = newAdded[URLmask]
+			let existingIntervals = await getAllIntervals()
+
+			for (const URLmask in existingIntervals) {
+				const
+					existingInterval = existingIntervals[URLmask],
+					addedItem = newAdded[URLmask]
 
 				if (addedItem && addedItem.enabled) {
 					if (existingInterval.time != addedItem.interval) { // changed interval
-						await clearInterval(URLmask)
+						await removeInterval(URLmask)
 						await createInterval(URLmask, addedItem.interval)
 					}
 				} else {
-					await clearInterval(URLmask)
+					await removeInterval(URLmask)
 				}
-			})
+			}
 
-			await Object.entries(newAdded).forEach(async ([URLmask, addedItem]) => {
-				const existingInterval = existingIntervals[URLmask]
+			// Refresh data after `removeInterval`
+			existingIntervals = await getAllIntervals()
+
+			for (const URLmask in newAdded) {
+				const
+					addedItem = newAdded[URLmask],
+					existingInterval = existingIntervals[URLmask]
 
 				if (!existingInterval && addedItem.enabled) {
 					await createInterval(URLmask, addedItem.interval)
 				}
-			})
+			}
 		} else {
 			await chrome.storage.local.set({ intervals: {} })
 		}
 
 		// Now trigger the front-end update
+		console.debug('sendMessage intervalsUpdated')
 		chrome.runtime.sendMessage({ intervalsUpdated: true })
 	}
 })
@@ -113,9 +131,9 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
 	const intervals = await getAllIntervals()
 
-	Object.entries(intervals).forEach(([URLmask, interval]) => {
+	for (const URLmask in intervals) {
 		if (changeInfo.status == 'loading' && matchURL(tab.url, URLmask)) {
-			insertTabTimeout(tab, interval)
+			insertTabTimeout(tab, intervals[URLmask])
 		}
-	})
+	}
 })

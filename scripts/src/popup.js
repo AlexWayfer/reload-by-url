@@ -35,6 +35,7 @@ ${timeObject.seconds.toString().padStart(2, '0')}\
 
 const initializeListAddedItem = (url, props, tabs, interval) => {
 	console.debug(`initializeListAddedItem`)
+	console.debug('interval = ', interval)
 
 	// There is `DocumentFragment` without `firstElementChild`
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#avoiding_documentfragment_pitfall
@@ -63,7 +64,7 @@ const initializeListAddedItem = (url, props, tabs, interval) => {
 		props.interval
 	)
 
-	console.debug(`timeUntilNextTimeout(interval) = ${timeUntilNextTimeout(interval)}`)
+	// console.debug(`timeUntilNextTimeout(interval) = ${timeUntilNextTimeout(interval)}`)
 
 	fillTimeSpan(
 		timeContainer.querySelector('.left'),
@@ -91,8 +92,8 @@ const initializeListAddedItem = (url, props, tabs, interval) => {
 		tabsList = newItem.querySelector('ul.tabs'),
 		tabTemplate = tabsList.querySelector('template.open-tab')
 
-	tabs.forEach(tab => {
-		if (!matchURL(tab.url, url)) return
+	for (const tab of tabs) {
+		if (!matchURL(tab.url, url)) continue
 
 		const
 			tabElement = tabTemplate.content.firstElementChild.cloneNode(true),
@@ -114,7 +115,7 @@ const initializeListAddedItem = (url, props, tabs, interval) => {
 		})
 
 		tabsList.appendChild(tabElement)
-	})
+	}
 
 	// Handle "Disable" and "Enable" buttons
 
@@ -198,6 +199,7 @@ const refreshListAdded = async () => {
 		tabs = await chrome.tabs.query({}),
 		intervals = await getAllIntervals()
 
+	console.debug('refreshListAdded')
 	console.debug('intervals = ', intervals)
 
 	if (addedEntries.length == 0) {
@@ -259,8 +261,8 @@ const highlightURLparts = urlString => {
 
 	const parts = []
 
-	Object.entries(match.groups).forEach(([key, value]) => {
-		if (!value) return
+	for (const [key, value] of Object.entries(match.groups)) {
+		if (!value) continue
 
 		const element = document.createElement('span')
 
@@ -268,7 +270,7 @@ const highlightURLparts = urlString => {
 		element.textContent = value
 
 		parts.push(element)
-	})
+	}
 
 	return parts
 }
@@ -316,7 +318,7 @@ formNew.addEventListener('submit', async event => {
 })
 
 chrome.tabs.onUpdated.addListener((tabID, changeInfo, tab) => {
-	listAdded.querySelectorAll('li ul.tabs li').forEach(tabElement => {
+	for (const tabElement of listAdded.querySelectorAll('li ul.tabs li')) {
 		if (tabElement.tabID == tabID) {
 			const faviconElement = tabElement.querySelector('img.favicon')
 
@@ -336,5 +338,5 @@ chrome.tabs.onUpdated.addListener((tabID, changeInfo, tab) => {
 					break
 			}
 		}
-	})
+	}
 })
