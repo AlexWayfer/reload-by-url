@@ -5,20 +5,29 @@ import {
 // Define functions
 
 const createTabTimeout = (timeInSeconds) => {
-	return setTimeout(() => {
+	console.debug('createTabTimeout')
+
+	timeoutID = setTimeout(() => {
 		location.reload()
 	}, timeInSeconds * 1000)
+
+	console.debug('timeoutID = ', timeoutID)
+
+	return timeoutID
 }
 
-const insertTabTimeout = async (tab, interval) => {
-	await chrome.scripting.executeScript({
-		target : { tabId : tab.id },
+const insertTabTimeout = async (tabId, interval) => {
+	console.debug('insertTabTimeout')
+
+	const injectionResult = await chrome.scripting.executeScript({
+		target : { tabId },
 		func : createTabTimeout,
 		args : [timeUntilNextTimeout(interval)],
-	}, injectionResult => {
-		// https://developer.chrome.com/docs/extensions/reference/scripting/#type-InjectionResult
-		interval.tabs[tab.id] = injectionResult[0].result
 	})
+
+	// https://developer.chrome.com/docs/extensions/reference/scripting/#type-InjectionResult
+	console.debug('injectionResult[0].result = ', injectionResult[0].result)
+	interval.tabs[tabId] = injectionResult[0].result
 }
 
 const createInterval = async (URLmask, time) => {
@@ -37,19 +46,25 @@ const createInterval = async (URLmask, time) => {
 
 	for (const tab of allTabs) {
 		if (matchURL(tab.url, URLmask)) {
-			insertTabTimeout(tab, newInterval)
+			await insertTabTimeout(tab.id, newInterval)
 		}
 	}
 
-	console.debug('intervals = ', intervals)
+	// console.debug('intervals = ', intervals)
 
 	await chrome.storage.local.set({ intervals })
+
+	// const newIntervals = await getAllIntervals()
+	// console.debug('newIntervals = ', newIntervals)
 
 	console.debug('createInterval done')
 }
 
-const clearTabTimeout = (timerID) => {
-	return clearTimeout(timerID)
+const clearTabTimeout = (timeoutID) => {
+	console.debug('clearTimeout')
+	console.debug('timeoutID = ', timeoutID)
+
+	return clearTimeout(timeoutID)
 }
 
 const removeInterval = async URLmask => {
@@ -57,11 +72,19 @@ const removeInterval = async URLmask => {
 
 	const intervals = await getAllIntervals()
 
-	for (const [tabID, timerID] of Object.entries(intervals[URLmask].tabs)) {
+	// console.debug('intervals = ', intervals)
+
+	for (let [tabId, timeoutID] of Object.entries(intervals[URLmask].tabs)) {
+		tabId = parseInt(tabId)
+
+		// console.debug('executeScript clearTabTimeout')
+		// console.debug('tabId = ', tabId)
+		// console.debug('timeoutID = ', timeoutID)
+
 		await chrome.scripting.executeScript({
-			target : { tabId : tabID },
+			target : { tabId },
 			func : clearTabTimeout,
-			args : [timerID],
+			args : [timeoutID],
 		})
 	}
 
@@ -128,12 +151,28 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 	}
 })
 
-chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+	// console.debug('chrome.tabs.onUpdated')
+
 	const intervals = await getAllIntervals()
+
+	let intervalsUpdated = false
 
 	for (const URLmask in intervals) {
 		if (changeInfo.status == 'loading' && matchURL(tab.url, URLmask)) {
-			insertTabTimeout(tab, intervals[URLmask])
+			await insertTabTimeout(tab.id, intervals[URLmask])
+
+			intervalsUpdated = true
+
+			// console.debug('intervals[URLmask].tabs = ', intervals[URLmask].tabs)
 		}
+	}
+
+	if (intervalsUpdated) {
+		// console.debug('intervals = ', intervals)
+		await chrome.storage.local.set({ intervals })
+
+		// const newIntervals = await getAllIntervals()
+		// console.debug('newIntervals = ', newIntervals)
 	}
 })
