@@ -1,5 +1,5 @@
 import punycode from 'punycode'
-import minimatch from 'minimatch'
+import { minimatch } from 'minimatch'
 
 const getFromStorage = async (key, area) => {
 	const found = await chrome.storage[area].get({ [key]: {} })
