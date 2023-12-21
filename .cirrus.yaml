@@ -1,0 +1,93 @@
+os_setup: &os_setup
+  container:
+    image: archlinux
+  os_setup_script:
+    - pacman -Syu --noconfirm
+    - pacman -S --needed --noconfirm git gcc make
+
+nodenv_cache: &nodenv_cache
+  nodenv_setup_script:
+    - echo 'export PATH="$HOME/.nodenv/bin:$PATH"' >> ~/.bashrc
+    - echo 'eval "$(nodenv init -)"' >> ~/.bashrc
+  nodenv_cache:
+    folder: $HOME/.nodenv
+    fingerprint_script:
+      - echo $CIRRUS_OS
+      - cat .node-version
+    populate_script:
+      - git clone https://github.com/nodenv/nodenv.git ~/.nodenv
+
+      - source ~/.bashrc
+
+      ## https://github.com/nodenv/node-build#installation
+      - mkdir -p "$(nodenv root)"/plugins
+      - git clone https://github.com/nodenv/node-build.git "$(nodenv root)"/plugins/node-build
+
+      - nodenv install
+
+      - npm install -g pnpm
+
+node_modules_cache: &node_modules_cache
+  node_modules_cache:
+    folder: node_modules
+    fingerprint_script:
+      - echo $CIRRUS_OS
+      - cat .node-version
+      - cat pnpm-lock.yaml
+  install_script:
+    - source ~/.bashrc
+    - pnpm install
+
+remark_task:
+  <<: *os_setup
+
+  always:
+    <<: *nodenv_cache
+
+  <<: *node_modules_cache
+
+  lint_script:
+    - source ~/.bashrc
+    - pnpm run lint:docs
+
+  only_if: ($CIRRUS_BRANCH == 'main') ||
+    changesInclude(
+      '.cirrus.yaml', '.gitignore', '.node-version', 'package.json', 'pnpm-lock.yaml',
+      '.remark*', '**.md'
+    )
+
+stylelint_task:
+  <<: *os_setup
+
+  always:
+    <<: *nodenv_cache
+
+  <<: *node_modules_cache
+
+  lint_script:
+    - source ~/.bashrc
+    - pnpm run lint:styles
+
+  only_if: ($CIRRUS_BRANCH == 'main') ||
+    changesInclude(
+      '.cirrus.yaml', '.gitignore', '.node-version', 'package.json', 'pnpm-lock.yaml',
+      '.stylelint*', 'styles/**'
+    )
+
+eslint_task:
+  <<: *os_setup
+
+  always:
+    <<: *nodenv_cache
+
+  <<: *node_modules_cache
+
+  lint_script:
+    - source ~/.bashrc
+    - pnpm run lint:scripts
+
+  only_if: ($CIRRUS_BRANCH == 'main') ||
+    changesInclude(
+      '.cirrus.yaml', '.gitignore', '.node-version', 'package.json', 'pnpm-lock.yaml',
+      '.eslint*', 'scripts/**', '*.js'
+    )
