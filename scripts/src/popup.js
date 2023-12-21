@@ -273,8 +273,8 @@ const highlightURLparts = urlString => {
 
 // Listen for future updates of intervals
 
-chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => {
-	if (request.intervalsUpdated) {
+chrome.storage.onChanged.addListener(async (changes, _area) => {
+	if ('intervals' in changes) {
 		await refreshListAdded()
 	}
 })

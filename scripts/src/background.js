@@ -140,10 +140,6 @@ chrome.storage.onChanged.addListener(async (changes, _area) => {
 		} else {
 			await chrome.storage.local.set({ intervals: {} })
 		}
-
-		// Now trigger the front-end update
-		console.debug('sendMessage intervalsUpdated')
-		chrome.runtime.sendMessage({ intervalsUpdated: true })
 	}
 })
 
