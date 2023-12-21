@@ -17,9 +17,9 @@ const
 	addedItemTemplate = sectionAdded.querySelector('template.added-item'),
 	emptyListNotice = sectionAdded.querySelector('p.empty-list')
 
-const splitInterval = interval => {
-	return { minutes: Math.floor(interval / 60), seconds: interval % 60 }
-}
+const splitInterval = interval => (
+	{ minutes: Math.floor(interval / 60), seconds: interval % 60 }
+)
 
 const fillTimeSpan = (element, timeInSeconds) => {
 	const timeObject = splitInterval(timeInSeconds)
@@ -34,7 +34,7 @@ ${timeObject.seconds.toString().padStart(2, '0')}\
 }
 
 const initializeListAddedItem = (url, props, tabs, interval) => {
-	console.debug(`initializeListAddedItem`)
+	console.debug('initializeListAddedItem')
 	console.debug('interval = ', interval)
 
 	// There is `DocumentFragment` without `firstElementChild`
@@ -213,9 +213,7 @@ const refreshListAdded = async () => {
 		const newItems =
 			addedEntries
 				.sort(([_aUrl, aProps], [_bUrl, bProps]) => bProps.addedAt - aProps.addedAt)
-				.map(([url, props]) => {
-					return initializeListAddedItem(url, props, tabs, intervals[url])
-				})
+				.map(([url, props]) => initializeListAddedItem(url, props, tabs, intervals[url]))
 
 		listAdded.replaceChildren(...newItems)
 
@@ -256,7 +254,7 @@ const toggleNewButtons = async () => {
 	updateButton.classList.toggle('hidden', !isPropsExist)
 }
 
-const urlRegex = /^(?<protocol>[\w\-*]*:\/\/)?(?<host>[^:\/]*)?(?<path>\/[^?]*)?(?<rest>\?.*)?$/
+const urlRegex = /^(?<protocol>[\w\-*]*:\/\/)?(?<host>[^:/]*)?(?<path>\/[^?]*)?(?<rest>\?.*)?$/
 
 const highlightURLparts = urlString => {
 	const match = urlString.match(urlRegex)
@@ -289,7 +287,7 @@ chrome.runtime.onMessage.addListener(async (request, _sender, _sendResponse) => 
 
 fillFormNewInputs(currentTab.url, await getPropsByURL(currentTab.url))
 
-newUrlInput.addEventListener('input', async event => {
+newUrlInput.addEventListener('input', async _event => {
 	toggleNewButtons()
 })
 
@@ -309,12 +307,12 @@ formNew.addEventListener('submit', async event => {
 
 	const newItem = added[newUrl] ??= {}
 
-	added[newUrl].interval =
+	newItem.interval =
 		parseInt(formData.get('minutes')) * 60 + parseInt(formData.get('seconds'))
 
-	added[newUrl].addedAt ??= Date.now()
+	newItem.addedAt ??= Date.now()
 
-	added[newUrl].enabled = true
+	newItem.enabled = true
 
 	chrome.storage.sync.set({ added })
 })

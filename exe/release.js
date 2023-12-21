@@ -15,7 +15,7 @@ console.log(`The current version is ${common.packageVersion}.`)
 readline.question('What the new version? ', newVersion => {
 	console.log('Updating manifest.json...')
 
-	newManifestRaw = common.manifestRaw.replace(
+	const newManifestRaw = common.manifestRaw.replace(
 		/(?<begin>"version":\s*")(?<version>(?:\d\.)+\d)(?<end>")/i,
 		`$<begin>${newVersion}$<end>`
 	)
@@ -36,10 +36,10 @@ readline.question('What the new version? ', newVersion => {
 	execSync(`git tag -a v${newVersion} -m "Version ${newVersion}"`)
 
 	console.log('Pushing commit...')
-	execSync(`git push`)
+	execSync('git push')
 
 	console.log('Pushing tags...')
-	execSync(`git push --tags`)
+	execSync('git push --tags')
 
 	readline.close()
-});
+})

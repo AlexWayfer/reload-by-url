@@ -9,10 +9,10 @@ const createTabTimeout = async (tabId, interval) => {
 
 	const injectionResult = await chrome.scripting.executeScript({
 		target: { tabId },
-		func: (timeInSeconds) => {
+		func: timeInSeconds => {
 			console.debug(`setTimeout ${timeInSeconds}`)
 
-			timeoutID = setTimeout(() => {
+			const timeoutID = setTimeout(() => {
 				location.reload()
 			}, timeInSeconds)
 
@@ -64,7 +64,7 @@ const removeTabTimeout = async (tabId, timeoutID) => {
 
 	await chrome.scripting.executeScript({
 		target: { tabId },
-		func: (timeoutID) => {
+		func: timeoutID => {
 			console.debug(`clearTimeout ${timeoutID}`)
 
 			return clearTimeout(timeoutID)
