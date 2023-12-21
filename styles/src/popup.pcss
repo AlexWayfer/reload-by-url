@@ -36,10 +36,6 @@ body {
 				margin: 0.3em 0;
 				padding: 0.25em 0.5em;
 			}
-
-			&.time {
-
-			}
 		}
 
 		& fieldset[name="time"] {
@@ -71,20 +67,20 @@ body {
 			margin: 0.4em 0;
 
 			&.add {
-				background-color: #33cc33;
-				border-color: #11aa11;
+				background-color: #3c3;
+				border-color: #1a1;
 
 				&:hover {
-					background-color: #22bb22;
+					background-color: #2b2;
 				}
 			}
 
 			&.update {
-				background-color: #ffcc00;
-				border-color: #ddaa00;
+				background-color: #fc0;
+				border-color: #da0;
 
 				&:hover {
-					background-color: #eebb00;
+					background-color: #eb0;
 				}
 			}
 		}
@@ -110,7 +106,7 @@ body {
 				border-bottom: 1px solid var(--border-color);
 
 				&.current {
-					background-color: rgba(180, 180, 180, 0.2);
+					background-color: rgba(180 180 180 / 20%);
 					border: 1px solid var(--border-color);
 				}
 
@@ -122,30 +118,30 @@ body {
 					margin: 0.2em 0 0.4em;
 					word-break: break-all;
 
-					--color: 0, 0, 0;
+					--color: 0 0 0;
 
-					color: rgba(var(--color), 1);
+					color: rgba(var(--color) / 100%);
 
 					& .url-protocol {
-						color: rgba(var(--color), 0.7);
+						color: rgba(var(--color) / 70%);
 					}
 
 					& .url-host {
-						color: rgba(var(--color), 1);
+						color: rgba(var(--color) / 100%);
 						font-weight: 500;
 					}
 
 					& .url-path {
-						color: rgba(var(--color), 0.8);
+						color: rgba(var(--color) / 80%);
 					}
 
 					& .url-rest {
-						color: rgba(var(--color), 0.6);
+						color: rgba(var(--color) / 60%);
 					}
 				}
 
 				& p.time {
-					margin: 0.4em 0 0.4em;
+					margin: 0.4em 0;
 				}
 
 				& ul.tabs {
@@ -220,11 +216,11 @@ body {
 
 					&.remove {
 						color: white;
-						background-color: #dd3333;
-						border-color: #bb1111;
+						background-color: #d33;
+						border-color: #b11;
 
 						&:hover {
-							background-color: #cc2222;
+							background-color: #c22;
 						}
 					}
 				}
