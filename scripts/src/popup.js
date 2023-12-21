@@ -68,10 +68,12 @@ const initializeListAddedItem = (url, props, tabs, interval) => {
 
 	fillTimeSpan(
 		timeContainer.querySelector('.left'),
-		interval ? Math.round(timeUntilNextTimeout(interval)) : props.interval
+		interval ? Math.round(timeUntilNextTimeout(interval) / 1000) : props.interval
 	)
 
 	if (interval) {
+		console.log('timeout change timer, ', timeUntilNextTimeout(interval))
+
 		setTimeout(
 			() => {
 				// Call after the short timeout

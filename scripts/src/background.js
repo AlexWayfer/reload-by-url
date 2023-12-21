@@ -14,7 +14,7 @@ const createTabTimeout = async (tabId, interval) => {
 
 			timeoutID = setTimeout(() => {
 				location.reload()
-			}, timeInSeconds * 1000)
+			}, timeInSeconds)
 
 			console.debug('timeoutID = ', timeoutID)
 
@@ -36,8 +36,7 @@ const createInterval = async (URLmask, time) => {
 		newInterval = (intervals[URLmask] ??= {})
 
 	newInterval.time = time
-	// https://bugs.chromium.org/p/chromium/issues/detail?id=1472588
-	newInterval.startAt = (new Date()).toString()
+	newInterval.startAt = Date.now()
 	newInterval.tabs = new Object()
 
 	const allTabs = await chrome.tabs.query({})

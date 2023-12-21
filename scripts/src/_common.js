@@ -31,6 +31,9 @@ export const matchURL = (realURL, URLmask) => {
 }
 
 export const timeUntilNextTimeout = interval => {
-	// https://bugs.chromium.org/p/chromium/issues/detail?id=1472588
-	return interval.time - (Date.now() - new Date(interval.startAt)) / 1000 % interval.time
+	// console.debug('timeUntilNextTimeout')
+	// console.debug('interval.startAt = ', interval.startAt)
+	// console.debug('Date.now() = ', Date.now())
+	// console.debug('past = ', (Date.now() - interval.startAt) / 1000)
+	return interval.time * 1000 - (Date.now() - interval.startAt) % (interval.time * 1000)
 }
