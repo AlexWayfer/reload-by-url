@@ -52,6 +52,6 @@ We don't need for `.crx` and keys, Developer Dashboard now does it automatically
 
 ## Credentials
 
-* [Main icon](https://www.flaticon.com/free-icon/sync_4340499)
-* [Loading icon](https://icons8.com/icon/XHchy08wwA71/loading-circle)
-* [GitHub icon](https://icons8.com/icon/set/github/material-outlined)
+*   [Main icon](https://www.flaticon.com/free-icon/sync_4340499)
+*   [Loading icon](https://icons8.com/icon/XHchy08wwA71/loading-circle)
+*   [GitHub icon](https://icons8.com/icon/set/github/material-outlined)
