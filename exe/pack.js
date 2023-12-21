@@ -60,7 +60,7 @@ console.info('Packing...')
 archive.directory('images/')
 archive.directory('pages/')
 archive.directory('scripts/compiled/')
-archive.directory('styles/compiled/')
+archive.directory('styles/')
 
 archive.file('manifest.json')
 

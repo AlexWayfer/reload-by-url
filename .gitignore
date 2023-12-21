@@ -1,6 +1,5 @@
 node_modules/
 
-/styles/compiled/
 /scripts/compiled/
 
 /pkg/
