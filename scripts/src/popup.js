@@ -180,15 +180,11 @@ const initializeListAddedItem = (url, props, tabs, interval) => {
 
 	newItem.querySelector('button.remove').addEventListener('click', async () => {
 		if (window.confirm('Do you want to remove?')) {
-			const
-				added = await getAdded(),
-				intervals = await getAllIntervals()
+			const added = await getAdded()
 
 			delete added[url]
-			delete intervals[url]
 
 			chrome.storage.sync.set({ added })
-			chrome.storage.local.set({ intervals })
 		}
 	})
 
